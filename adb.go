@@ -18,6 +18,8 @@ const ADB_DOWNLOAD_URL_PREFIX = "https://dl.google.com/android/repository/platfo
 
 var ErrSizeLimitExceeded = errors.New("size limit exceeded")
 
+var adbExePath string
+
 // https://dl.google.com/android/repository/platform-tools-latest-windows.zip
 // https://dl.google.com/android/repository/platform-tools-latest-darwin.zip
 // https://dl.google.com/android/repository/platform-tools-latest-linux.zip
@@ -38,6 +40,38 @@ func downloadADB() (string, error) {
 
 	_, err = io.Copy(file, res.Body)
 	return file.Name(), err
+}
+
+func startADBServer() error {
+	var err0 error
+	adbExePath, err0 = getADBPath()
+	if err0 != nil {
+		tmp, err := downloadADB()
+		if err == nil {
+			return err
+		}
+
+		defer os.Remove(tmp)
+		adbDir, err := getADBDir()
+		if err != nil {
+			return err
+		}
+
+		if err := unzip(tmp, adbDir); err != nil {
+			return err
+		}
+
+		adbExePath, err = findADBExecutable(adbDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return exec.Command(adbExePath, "start-server").Run()
+}
+
+func killADBServer() error {
+	return exec.Command(adbExePath, "kill-server").Run()
 }
 
 func getADBDir() (string, error) {
