@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"io"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -29,5 +30,11 @@ func main() {
 
 	if err != nil {
 		println("Error:", err.Error())
+	}
+}
+
+func closeIO(c io.Closer) {
+	if err := c.Close(); err != nil {
+		panic(err)
 	}
 }
