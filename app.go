@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"path"
 	"strings"
@@ -12,21 +11,20 @@ import (
 )
 
 type App struct {
-	ctx         context.Context
-	client      goadb.Client
-	device      goadb.Device
-	rootAliases [2][2]string
+	ctx    context.Context
+	client goadb.Client
+	device goadb.Device
 }
 
 func NewApp() *App {
-	return &App{rootAliases: [2][2]string{{"internal", ""}, {"external", ""}}}
+	return &App{}
 }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) NewADBClient() []goadb.Device {
+func (a *App) NewADBClient() []string {
 	if err := startADBServer(); err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +40,14 @@ func (a *App) NewADBClient() []goadb.Device {
 		log.Fatal(err)
 	}
 
-	return devices
+	labels := make([]string, 0, len(devices))
+	for _, device := range devices {
+		info := device.DeviceInfo()
+		label := info["device"] + ":" + info["model"]
+		labels = append(labels, label)
+	}
+
+	return labels
 }
 
 func (a *App) SelectDevice(idx int) {
@@ -73,32 +78,19 @@ func (a *App) ListDirectory(path string) []goadb.DeviceFileInfo {
 }
 
 func (a *App) getCleanDirPath(dirpath string) (string, error) {
-	rootDir := a.rootAliases[0][1]
-	rest, ok := strings.CutPrefix(dirpath, "/internal")
-	if !ok {
-		if a.rootAliases[1][1] == "" {
-			return "", errors.New("no external storage")
-		}
+	const STORAGE_DIR = "/storage/"
 
-		rest, ok = strings.CutPrefix(dirpath, "/external")
-		rootDir = a.rootAliases[1][1]
-
-		if !ok {
-			return "", errors.New("unknown root")
-		}
-	}
-
-	if strings.ContainsAny(";&|", rest) {
+	if strings.ContainsAny(";&|", dirpath) {
 		return "", errors.New("invalid characters")
 	}
 
-	cleanPath := path.Clean(path.Join(rootDir, rest))
+	cleanPath := path.Clean(dirpath)
 	if !strings.HasSuffix(cleanPath, "/") {
 		cleanPath += "/"
 	}
 
-	if !strings.HasPrefix(cleanPath, rootDir) {
-		return "", fmt.Errorf("path escapes: %s", rootDir)
+	if !strings.HasPrefix(cleanPath, STORAGE_DIR) {
+		return "", errors.New("path escapes " + STORAGE_DIR)
 	}
 
 	return cleanPath, nil
