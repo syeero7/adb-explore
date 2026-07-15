@@ -10,7 +10,9 @@ import (
 )
 
 type FileSystem struct {
-	device *goadb.Device
+	device      *goadb.Device
+	currentPath string
+	cache       *DirCache
 }
 
 func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
@@ -19,26 +21,39 @@ func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
 		log.Fatal(err)
 	}
 
+	if entries, ok := f.cache.get(dirpath); ok {
+		f.currentPath = dirpath
+		return entries
+	}
+
 	entries, err := f.device.List(dirpath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	f.cache.set(dirpath, entries)
+	f.currentPath = dirpath
 	return entries
 }
 
 func (f *FileSystem) Download(remote, local string) {}
 
+// updates cache
 func (f *FileSystem) Upload(local, remote string) {}
 
 func (f *FileSystem) Delete(path string) {}
 
-func (f *FileSystem) Move(old, new string) {}
+func (f *FileSystem) Rename(old, new string) {}
 
 func (f *FileSystem) MakeDir(path string) {}
 
+func (f *FileSystem) getCachedFile(device *goadb.Device) {
+
+}
+
 func (f *FileSystem) init(device *goadb.Device) {
 	f.device = device
+	f.cache = newDirCache(5)
 }
 
 func cleanPath(dirpath string) (string, error) {
