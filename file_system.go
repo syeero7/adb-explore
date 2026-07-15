@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"os"
 	"path"
 	"strings"
 
@@ -36,7 +37,34 @@ func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
 	return entries
 }
 
-func (f *FileSystem) Download(remote, local string) {}
+func (f *FileSystem) Download(idx int, remote, local string) {
+	files, ok := f.cache.get(f.currentPath)
+	if !ok {
+		log.Fatal("current dir not found")
+	}
+
+	if l := len(files); l <= 0 || l <= idx {
+		log.Fatal("invalid index")
+	}
+
+	remoteDir, err := cleanPath(path.Dir(remote))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if remote != path.Join(remoteDir, files[idx].Name) {
+		log.Fatal("path error ", path.Join(remoteDir, files[idx].Name), remote)
+	}
+
+	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, files[idx].Mode)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := f.device.Pull(remote, dest); err != nil {
+		log.Fatal(err)
+	}
+}
 
 // updates cache
 func (f *FileSystem) Upload(local, remote string) {}
