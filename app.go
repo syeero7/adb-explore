@@ -2,10 +2,7 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
-	"path"
-	"strings"
 
 	goadb "github.com/electricbubble/gadb"
 )
@@ -13,7 +10,7 @@ import (
 type App struct {
 	ctx    context.Context
 	client goadb.Client
-	device goadb.Device
+	FileSystem
 }
 
 func NewApp() *App {
@@ -60,38 +57,5 @@ func (a *App) SelectDevice(idx int) {
 		log.Fatal("Invalid device index")
 	}
 
-	a.device = devices[idx]
-}
-
-func (a *App) ListDirectory(path string) []goadb.DeviceFileInfo {
-	dirpath, err := a.getCleanDirPath(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	entries, err := a.device.List(dirpath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return entries
-}
-
-func (a *App) getCleanDirPath(dirpath string) (string, error) {
-	const STORAGE_DIR = "/storage/"
-
-	if strings.ContainsAny(";&|", dirpath) {
-		return "", errors.New("invalid characters")
-	}
-
-	cleanPath := path.Clean(dirpath)
-	if !strings.HasSuffix(cleanPath, "/") {
-		cleanPath += "/"
-	}
-
-	if !strings.HasPrefix(cleanPath, STORAGE_DIR) {
-		return "", errors.New("path escapes " + STORAGE_DIR)
-	}
-
-	return cleanPath, nil
+	a.FileSystem.init(&devices[idx])
 }
