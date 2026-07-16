@@ -68,17 +68,34 @@ func (f *FileSystem) Download(idx int, remote, local string) {
 }
 
 // updates cache
-func (f *FileSystem) Upload(local, remote string) {}
+func (f *FileSystem) Upload(local, remote string) {
+	remoteDir, err := cleanPath(remote)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	file, err := os.Open(local)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer closeIO(file)
+	stat, err := file.Stat()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	f.cache.invalidate(remoteDir)
+	if err := f.device.Push(file, remoteDir, stat.ModTime(), stat.Mode()); err != nil {
+		log.Fatal(err)
+	}
+}
 
 func (f *FileSystem) Delete(path string) {}
 
 func (f *FileSystem) Rename(old, new string) {}
 
 func (f *FileSystem) MakeDir(path string) {}
-
-func (f *FileSystem) getCachedFile(device *goadb.Device) {
-
-}
 
 func (f *FileSystem) init(device *goadb.Device) {
 	f.device = device
