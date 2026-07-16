@@ -37,6 +37,10 @@ func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
 	return entries
 }
 
+// TODO: add support for push/pull directories
+// maybe compress and decompress directories
+
+// NOTE: does not support pulling directories
 func (f *FileSystem) Download(idx int, remote, local string) {
 	files, ok := f.cache.get(f.currentPath)
 	if !ok {
@@ -67,7 +71,7 @@ func (f *FileSystem) Download(idx int, remote, local string) {
 	}
 }
 
-// updates cache
+// NOTE: local path should points to a file and remote path should points to a directory
 func (f *FileSystem) Upload(local, remote string) {
 	remoteDir, err := cleanPath(remote)
 	if err != nil {
@@ -85,35 +89,74 @@ func (f *FileSystem) Upload(local, remote string) {
 		log.Fatal(err)
 	}
 
-	f.cache.invalidate(remoteDir)
 	if err := f.device.Push(file, remoteDir, stat.ModTime(), stat.Mode()); err != nil {
 		log.Fatal(err)
 	}
+	f.cache.invalidate(remoteDir)
 }
 
-func (f *FileSystem) Delete(path string) {}
+func (f *FileSystem) Delete(path string) {
+	remote, err := cleanPath(path)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-func (f *FileSystem) Rename(old, new string) {}
+	if _, err := f.device.RunShellCommand("rm -rf", remote); err != nil {
+		log.Fatal(err)
+	}
+	f.cache.invalidateRec(remote)
+}
 
-func (f *FileSystem) MakeDir(path string) {}
+func (f *FileSystem) Rename(old, new string) {
+	oldPath, err := cleanPath(old)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newPath, err := cleanPath(new)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if oldp := path.Dir(oldPath); oldp != path.Dir(newPath) || !strings.HasPrefix(oldp, f.currentPath) {
+		log.Fatal("cannot move")
+	}
+
+	if _, err := f.device.RunShellCommand("mv", oldPath, newPath); err != nil {
+		log.Fatal(err)
+	}
+	f.cache.invalidateRec(f.currentPath)
+}
+
+func (f *FileSystem) MakeDir(dirname string) {
+	dirPath, err := cleanPath(path.Join(f.currentPath, dirname))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !strings.HasPrefix(dirPath, f.currentPath) {
+		log.Fatal("not in current dir")
+	}
+
+	if _, err := f.device.RunShellCommand("mkdir", dirPath); err != nil {
+		log.Fatal(err)
+	}
+	f.cache.invalidate(f.currentPath)
+}
 
 func (f *FileSystem) init(device *goadb.Device) {
 	f.device = device
 	f.cache = newDirCache(5)
 }
 
-func cleanPath(dirpath string) (string, error) {
+func cleanPath(fpath string) (string, error) {
 	const STORAGE_DIR = "/storage/"
 
-	if strings.ContainsAny(";&|", dirpath) {
+	if strings.ContainsAny(";&|", fpath) {
 		return "", errors.New("invalid characters")
 	}
 
-	cleanPath := path.Clean(dirpath)
-	if !strings.HasSuffix(cleanPath, "/") {
-		cleanPath += "/"
-	}
-
+	cleanPath := path.Clean(fpath)
 	if !strings.HasPrefix(cleanPath, STORAGE_DIR) {
 		return "", errors.New("path escapes " + STORAGE_DIR)
 	}
