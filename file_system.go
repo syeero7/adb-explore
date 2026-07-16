@@ -61,6 +61,7 @@ func (f *FileSystem) Download(idx int, remote, local string) {
 		log.Fatal(err)
 	}
 
+	defer closeIO(dest)
 	if err := f.device.Pull(remote, dest); err != nil {
 		log.Fatal(err)
 	}
