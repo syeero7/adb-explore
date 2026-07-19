@@ -11,9 +11,9 @@ import (
 )
 
 type FileSystem struct {
-	device      *goadb.Device
+	device      goadb.Device
 	currentPath string
-	cache       *DirCache
+	cache       DirCache
 }
 
 func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
@@ -145,8 +145,8 @@ func (f *FileSystem) MakeDir(dirname string) {
 }
 
 func (f *FileSystem) init(device *goadb.Device) {
-	f.device = device
-	f.cache = newDirCache(5)
+	f.device = *device
+	f.cache = *newDirCache(5)
 }
 
 func cleanPath(fpath string) (string, error) {
