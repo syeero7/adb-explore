@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -17,8 +18,6 @@ const OFFICIAL_ADB_PAGE_URL = "https://developer.android.com/tools/releases/plat
 const ADB_DOWNLOAD_URL_PREFIX = "https://dl.google.com/android/repository/platform-tools-latest-"
 
 var ErrSizeLimitExceeded = errors.New("size limit exceeded")
-
-var adbExePath string
 
 // https://dl.google.com/android/repository/platform-tools-latest-windows.zip
 // https://dl.google.com/android/repository/platform-tools-latest-darwin.zip
@@ -42,36 +41,18 @@ func downloadADB() (string, error) {
 	return file.Name(), err
 }
 
-func startADBServer() error {
-	var err0 error
-	adbExePath, err0 = getADBPath()
-	if err0 != nil {
-		tmp, err := downloadADB()
-		if err == nil {
-			return err
-		}
-
-		defer os.Remove(tmp)
-		adbDir, err := getADBDir()
-		if err != nil {
-			return err
-		}
-
-		if err := unzip(tmp, adbDir); err != nil {
-			return err
-		}
-
-		adbExePath, err = findADBExecutable(adbDir)
-		if err != nil {
-			return err
-		}
-	}
-
-	return exec.Command(adbExePath, "start-server").Run()
+func startADBServer(adbPath string, port int) error {
+	adbServerPort := strconv.FormatInt(int64(port), 10)
+	cmd := exec.Command(adbPath, "start-server")
+	cmd.Env = append(os.Environ(), "ANDROID_ADB_SERVER_PORT="+adbServerPort)
+	return cmd.Run()
 }
 
-func killADBServer() error {
-	return exec.Command(adbExePath, "kill-server").Run()
+func killADBServer(adbPath string, port int) error {
+	adbServerPort := strconv.FormatInt(int64(port), 10)
+	cmd := exec.Command(adbPath, "kill-server")
+	cmd.Env = append(os.Environ(), "ANDROID_ADB_SERVER_PORT="+adbServerPort)
+	return cmd.Run()
 }
 
 func getADBDir() (string, error) {

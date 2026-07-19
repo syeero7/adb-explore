@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"path/filepath"
 
 	goadb "github.com/electricbubble/gadb"
 )
@@ -21,12 +23,18 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) NewADBClient() []string {
-	if err := startADBServer(); err != nil {
+func (a *App) shutdown(_ context.Context) {
+	if err := a.client.KillServer(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (a *App) NewADBClient(adbPath string, port int) []string {
+	if err := startADBServer(adbPath, port); err != nil {
 		log.Fatal(err)
 	}
 
-	client, err := goadb.NewClient()
+	client, err := goadb.NewClientWith("localhost", port)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,4 +66,34 @@ func (a *App) SelectDevice(idx int) {
 	}
 
 	a.FileSystem.init(&devices[idx])
+}
+
+func (a *App) DownloadADB() string {
+	tmp, err := downloadADB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove(tmp)
+	adbDir, err := getADBDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := unzip(tmp, filepath.Dir(adbDir)); err != nil {
+		log.Fatal(err)
+	}
+
+	adbPath, err := findADBExecutable(adbDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return adbPath
+}
+
+func (a *App) KillServer(adbPath string, port int) {
+	if err := killADBServer(adbPath, port); err != nil {
+		log.Fatal(err)
+	}
 }
