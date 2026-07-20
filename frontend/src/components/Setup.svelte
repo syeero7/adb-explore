@@ -1,5 +1,6 @@
 <script lang="ts">
   import { NewADBClient, SelectDevice, KillServer, DownloadADB } from "@wails/go/main/App";
+  import Logs from "./Logs.svelte";
 
   let port = $state(5037);
   let adbPath = $state("/usr/bin/adb");
@@ -64,6 +65,7 @@
   <!-- TODO: check server is running on given port or any onsubmit errors -->
   <button type="button" onclick={downloadADB}>Download ADB</button>
   <button type="button" onclick={killServer}>Kill ADB server</button>
+  <Logs />
 </div>
 
 <style>
