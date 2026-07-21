@@ -10,9 +10,11 @@ import (
 )
 
 type App struct {
-	ctx    context.Context
-	client goadb.Client
-	FileSystem
+	currentPath string
+	cache       DirCache
+	ctx         context.Context
+	client      goadb.Client
+	device      goadb.Device
 }
 
 func NewApp() *App {
@@ -31,25 +33,35 @@ func (a *App) shutdown(_ context.Context) {
 
 func (a *App) NewADBClient(adbPath string, port int) []string {
 	if err := startADBServer(adbPath, port); err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return nil
 	}
 
+	a.sendLogMsg(LogInfo, "adb server started successfully")
 	client, err := goadb.NewClientWith("localhost", port)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return nil
 	}
 
 	a.client = client
 	devices, err := client.DeviceList()
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return nil
 	}
 
 	labels := make([]string, 0, len(devices))
 	for _, device := range devices {
 		info := device.DeviceInfo()
-		label := info["device"] + ":" + info["model"]
-		labels = append(labels, label)
+		serial := device.Serial()
+		if info["device"] == "" {
+			a.sendLogMsg(LogErr, serial+": device unauthorized")
+			continue
+		}
+
+		// label := strings.Join([]string{serial, info["device"], info["model"]}, ":")
+		labels = append(labels, serial)
 	}
 
 	return labels
@@ -58,35 +70,44 @@ func (a *App) NewADBClient(adbPath string, port int) []string {
 func (a *App) SelectDevice(idx int) {
 	devices, err := a.client.DeviceList()
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	if l := len(devices); l <= 0 || l <= idx {
-		log.Fatal("Invalid device index")
+		a.sendLogMsg(LogErr, "Invalid device index")
+		return
 	}
 
-	a.FileSystem.init(&devices[idx])
+	a.device = devices[idx]
+	a.cache = *newDirCache(5)
 }
 
 func (a *App) DownloadADB() string {
+	a.sendLogMsg(LogInfo, "downloading android platform tools")
 	tmp, err := downloadADB()
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return ""
 	}
 
 	defer os.Remove(tmp)
 	adbDir, err := getADBDir()
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return ""
 	}
 
+	a.sendLogMsg(LogInfo, "extracting android platform tools zip")
 	if err := unzip(tmp, filepath.Dir(adbDir)); err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return ""
 	}
 
 	adbPath, err := findADBExecutable(adbDir)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return ""
 	}
 
 	return adbPath

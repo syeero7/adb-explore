@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -10,30 +9,26 @@ import (
 	goadb "github.com/electricbubble/gadb"
 )
 
-type FileSystem struct {
-	device      goadb.Device
-	currentPath string
-	cache       DirCache
-}
-
-func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
+func (a *App) List(path string) []goadb.DeviceFileInfo {
 	dirpath, err := cleanPath(path)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return nil
 	}
 
-	if entries, ok := f.cache.get(dirpath); ok {
-		f.currentPath = dirpath
+	if entries, ok := a.cache.get(dirpath); ok {
+		a.currentPath = dirpath
 		return entries
 	}
 
-	entries, err := f.device.List(dirpath)
+	entries, err := a.device.List(dirpath)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return nil
 	}
 
-	f.cache.set(dirpath, entries)
-	f.currentPath = dirpath
+	a.cache.set(dirpath, entries)
+	a.currentPath = dirpath
 	return entries
 }
 
@@ -41,112 +36,127 @@ func (f *FileSystem) List(path string) []goadb.DeviceFileInfo {
 // maybe compress and decompress directories
 
 // NOTE: does not support pulling directories
-func (f *FileSystem) Download(idx int, remote, local string) {
-	files, ok := f.cache.get(f.currentPath)
+func (a *App) Download(idx int, remote, local string) {
+	files, ok := a.cache.get(a.currentPath)
 	if !ok {
-		log.Fatal("current dir not found")
+		a.sendLogMsg(LogErr, "current dir not found")
+		return
 	}
 
 	if l := len(files); l <= 0 || l <= idx {
-		log.Fatal("invalid index")
+		a.sendLogMsg(LogErr, "invalid index")
+		return
 	}
 
 	remoteDir, err := cleanPath(path.Dir(remote))
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	if remote != path.Join(remoteDir, files[idx].Name) {
-		log.Fatal("path error ", path.Join(remoteDir, files[idx].Name), remote)
+		// TODO: err message
+		a.sendLogMsg(LogErr, "path error ", path.Join(remoteDir, files[idx].Name), remote)
+		return
 	}
 
 	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, files[idx].Mode)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	defer closeIO(dest)
-	if err := f.device.Pull(remote, dest); err != nil {
-		log.Fatal(err)
+	if err := a.device.Pull(remote, dest); err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 }
 
 // NOTE: local path should points to a file and remote path should points to a directory
-func (f *FileSystem) Upload(local, remote string) {
+func (a *App) Upload(local, remote string) {
 	remoteDir, err := cleanPath(remote)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	file, err := os.Open(local)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	defer closeIO(file)
 	stat, err := file.Stat()
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
-	if err := f.device.Push(file, remoteDir, stat.ModTime(), stat.Mode()); err != nil {
-		log.Fatal(err)
+	if err := a.device.Push(file, remoteDir, stat.ModTime(), stat.Mode()); err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
-	f.cache.invalidate(remoteDir)
+	a.cache.invalidate(remoteDir)
 }
 
-func (f *FileSystem) Delete(path string) {
+func (a *App) Delete(path string) {
 	remote, err := cleanPath(path)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
-	if _, err := f.device.RunShellCommand("rm -rf", remote); err != nil {
-		log.Fatal(err)
+	if _, err := a.device.RunShellCommand("rm -rf", remote); err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
-	f.cache.invalidateRec(remote)
+	a.cache.invalidateRec(remote)
 }
 
-func (f *FileSystem) Rename(old, new string) {
+func (a *App) Rename(old, new string) {
 	oldPath, err := cleanPath(old)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
 	newPath, err := cleanPath(new)
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
-	if oldp := path.Dir(oldPath); oldp != path.Dir(newPath) || !strings.HasPrefix(oldp, f.currentPath) {
-		log.Fatal("cannot move")
+	if oldp := path.Dir(oldPath); oldp != path.Dir(newPath) || !strings.HasPrefix(oldp, a.currentPath) {
+		a.sendLogMsg(LogErr, "cannot move")
+		return
 	}
 
-	if _, err := f.device.RunShellCommand("mv", oldPath, newPath); err != nil {
-		log.Fatal(err)
+	if _, err := a.device.RunShellCommand("mv", oldPath, newPath); err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
-	f.cache.invalidateRec(f.currentPath)
+	a.cache.invalidateRec(a.currentPath)
 }
 
-func (f *FileSystem) MakeDir(dirname string) {
-	dirPath, err := cleanPath(path.Join(f.currentPath, dirname))
+func (a *App) MakeDir(dirname string) {
+	dirPath, err := cleanPath(path.Join(a.currentPath, dirname))
 	if err != nil {
-		log.Fatal(err)
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
 
-	if !strings.HasPrefix(dirPath, f.currentPath) {
-		log.Fatal("not in current dir")
+	if !strings.HasPrefix(dirPath, a.currentPath) {
+		a.sendLogMsg(LogErr, "not in current dir")
+		return
 	}
 
-	if _, err := f.device.RunShellCommand("mkdir", dirPath); err != nil {
-		log.Fatal(err)
+	if _, err := a.device.RunShellCommand("mkdir", dirPath); err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return
 	}
-	f.cache.invalidate(f.currentPath)
-}
-
-func (f *FileSystem) init(device *goadb.Device) {
-	f.device = *device
-	f.cache = *newDirCache(5)
+	a.cache.invalidate(a.currentPath)
 }
 
 func cleanPath(fpath string) (string, error) {
@@ -157,7 +167,7 @@ func cleanPath(fpath string) (string, error) {
 	}
 
 	cleanPath := path.Clean(fpath)
-	if !strings.HasPrefix(cleanPath, STORAGE_DIR) {
+	if cleanPath != STORAGE_DIR[:len(STORAGE_DIR)-1] && !strings.HasPrefix(cleanPath, STORAGE_DIR) {
 		return "", errors.New("path escapes " + STORAGE_DIR)
 	}
 
