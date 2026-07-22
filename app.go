@@ -31,21 +31,24 @@ func (a *App) shutdown(_ context.Context) {
 	}
 }
 
-func (a *App) NewADBClient(adbPath string, port int) []string {
+func (a *App) NewADBClient(adbPath string, port int) {
 	if err := startADBServer(adbPath, port); err != nil {
 		a.sendLogMsg(LogErr, err.Error())
-		return nil
+		return
 	}
 
 	a.sendLogMsg(LogInfo, "adb server started successfully")
 	client, err := goadb.NewClientWith("localhost", port)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
-		return nil
+		return
 	}
 
 	a.client = client
-	devices, err := client.DeviceList()
+}
+
+func (a *App) GetDeviceList() []string {
+	devices, err := a.client.DeviceList()
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return nil

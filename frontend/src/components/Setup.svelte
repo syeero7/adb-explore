@@ -1,7 +1,14 @@
 <script lang="ts">
-  import { NewADBClient, SelectDevice, KillServer, DownloadADB } from "@wails/go/main/App";
-  import { router } from "@/lib/router.svelte";
   import Logs from "./Logs.svelte";
+  import {
+    NewADBClient,
+    SelectDevice,
+    KillServer,
+    DownloadADB,
+    GetDeviceList,
+  } from "@wails/go/main/App";
+  import { router } from "@/lib/router.svelte";
+  import { svg, RELOAD } from "@/lib/svg";
 
   let port = $state(5037);
   let adbPath = $state("/usr/bin/adb");
@@ -10,7 +17,8 @@
 
   async function startADB(e: SubmitEvent) {
     e.preventDefault();
-    devices = await NewADBClient(adbPath, port);
+    await NewADBClient(adbPath, port);
+    devices = await GetDeviceList();
   }
 
   async function selectDevice(e: SubmitEvent) {
@@ -26,6 +34,10 @@
 
   async function downloadADB() {
     adbPath = await DownloadADB();
+  }
+
+  async function refreshDevices() {
+    devices = await GetDeviceList();
   }
 </script>
 
@@ -46,7 +58,6 @@
 </form>
 
 <form onsubmit={selectDevice}>
-  <!-- TODO: add button to refresh devices  -->
   <label>
     <span>Device</span>
     <select required bind:value={selectedDevice}>
@@ -58,7 +69,11 @@
     </select>
   </label>
 
-  <button disabled={typeof selectedDevice !== "number"}>Select</button>
+  <button type="button" title="refresh" onclick={refreshDevices}>
+    {@render svg({ d: RELOAD })}
+  </button>
+
+  <button type="submit" disabled={typeof selectedDevice !== "number"}>Select</button>
 </form>
 
 <div>

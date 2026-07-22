@@ -14,6 +14,10 @@ export function DownloadADB() {
   return window['go']['main']['App']['DownloadADB']();
 }
 
+export function GetDeviceList() {
+  return window['go']['main']['App']['GetDeviceList']();
+}
+
 export function KillServer(arg1, arg2) {
   return window['go']['main']['App']['KillServer'](arg1, arg2);
 }

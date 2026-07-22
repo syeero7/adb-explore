@@ -8,13 +8,15 @@ export function Download(arg1:number,arg2:string,arg3:string):Promise<void>;
 
 export function DownloadADB():Promise<string>;
 
+export function GetDeviceList():Promise<Array<string>>;
+
 export function KillServer(arg1:string,arg2:number):Promise<void>;
 
 export function List(arg1:string,arg2:string,arg3:string):Promise<main.DirEntries>;
 
 export function MakeDir(arg1:string):Promise<void>;
 
-export function NewADBClient(arg1:string,arg2:number):Promise<Array<string>>;
+export function NewADBClient(arg1:string,arg2:number):Promise<void>;
 
 export function Rename(arg1:string,arg2:string):Promise<void>;
 
