@@ -18,8 +18,8 @@ export function KillServer(arg1, arg2) {
   return window['go']['main']['App']['KillServer'](arg1, arg2);
 }
 
-export function List(arg1) {
-  return window['go']['main']['App']['List'](arg1);
+export function List(arg1, arg2, arg3) {
+  return window['go']['main']['App']['List'](arg1, arg2, arg3);
 }
 
 export function MakeDir(arg1) {

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { NewADBClient, SelectDevice, KillServer, DownloadADB } from "@wails/go/main/App";
+  import { router } from "@/lib/router.svelte";
   import Logs from "./Logs.svelte";
 
   let port = $state(5037);
@@ -16,6 +17,7 @@
     e.preventDefault();
     if (selectedDevice == null) return;
     await SelectDevice(selectedDevice);
+    router.current = "explore";
   }
 
   async function killServer() {
@@ -44,6 +46,7 @@
 </form>
 
 <form onsubmit={selectDevice}>
+  <!-- TODO: add button to refresh devices  -->
   <label>
     <span>Device</span>
     <select required bind:value={selectedDevice}>
@@ -61,7 +64,6 @@
 <div>
   <!-- TODO: download progress bar -->
   <!-- NOTE: use resp.ContentLength with io.TeeReader -->
-
   <!-- TODO: check server is running on given port or any onsubmit errors -->
   <button type="button" onclick={downloadADB}>Download ADB</button>
   <button type="button" onclick={killServer}>Kill ADB server</button>
