@@ -3,42 +3,40 @@ package main
 import (
 	"strings"
 	"sync"
-
-	goadb "github.com/electricbubble/gadb"
 )
 
 type DirCache struct {
 	maxEntries  int
 	mu          sync.RWMutex
-	store       map[string][]goadb.DeviceFileInfo
+	store       map[string]DirEntries
 	previousDir string
 }
 
 func newDirCache(maxEntries int) *DirCache {
 	return &DirCache{
-		store:      make(map[string][]goadb.DeviceFileInfo, maxEntries),
+		store:      make(map[string]DirEntries, maxEntries),
 		maxEntries: maxEntries,
 	}
 }
 
-func (c *DirCache) get(key string) ([]goadb.DeviceFileInfo, bool) {
+func (c *DirCache) get(key string) (DirEntries, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if files, ok := c.store[key]; ok {
-		return files, true
+	if entries, ok := c.store[key]; ok {
+		return entries, true
 	}
 
-	return nil, false
+	return DirEntries{}, false
 }
 
-func (c *DirCache) set(key string, files []goadb.DeviceFileInfo) {
+func (c *DirCache) set(key string, files DirEntries) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	if len(c.store) >= c.maxEntries {
 		tmp, ok := c.store[c.previousDir]
-		c.store = make(map[string][]goadb.DeviceFileInfo, c.maxEntries)
+		c.store = make(map[string]DirEntries, c.maxEntries)
 
 		if ok {
 			c.store[c.previousDir] = tmp

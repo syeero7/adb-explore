@@ -5,15 +5,31 @@ import (
 	"os"
 	"path"
 	"strings"
-
-	goadb "github.com/electricbubble/gadb"
+	"time"
 )
 
-func (a *App) List(path string) []goadb.DeviceFileInfo {
+type Entry struct {
+	IsDir        bool        `json:"isDir"`
+	Name         string      `json:"name"`
+	Path         string      `json:"path"`
+	Size         string      `json:"size"`
+	Mode         os.FileMode `json:"mode"`
+	LastModified time.Time   `json:"lastModified"`
+}
+
+type DirEntries struct {
+	Parent  string  `json:"parent"`
+	Current string  `json:"current"`
+	Entries []Entry `json:"entries"`
+	Query   string  `json:"query"`
+	SortBy  string  `json:"sortBy"` // NOTE:  name:asc, size:desc
+}
+
+func (a *App) List(path, query, sortBy string) DirEntries {
 	dirpath, err := cleanPath(path)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
-		return nil
+		return DirEntries{}
 	}
 
 	if entries, ok := a.cache.get(dirpath); ok {
@@ -21,10 +37,10 @@ func (a *App) List(path string) []goadb.DeviceFileInfo {
 		return entries
 	}
 
-	entries, err := a.device.List(dirpath)
+	entries, err := a.getEntries(dirpath)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
-		return nil
+		return DirEntries{}
 	}
 
 	a.cache.set(dirpath, entries)
@@ -37,13 +53,13 @@ func (a *App) List(path string) []goadb.DeviceFileInfo {
 
 // NOTE: does not support pulling directories
 func (a *App) Download(idx int, remote, local string) {
-	files, ok := a.cache.get(a.currentPath)
+	entries, ok := a.cache.get(a.currentPath)
 	if !ok {
 		a.sendLogMsg(LogErr, "current dir not found")
 		return
 	}
 
-	if l := len(files); l <= 0 || l <= idx {
+	if l := len(entries.Entries); l <= 0 || l <= idx {
 		a.sendLogMsg(LogErr, "invalid index")
 		return
 	}
@@ -54,13 +70,13 @@ func (a *App) Download(idx int, remote, local string) {
 		return
 	}
 
-	if remote != path.Join(remoteDir, files[idx].Name) {
+	if remote != path.Join(remoteDir, entries.Entries[idx].Name) {
 		// TODO: err message
-		a.sendLogMsg(LogErr, "path error ", path.Join(remoteDir, files[idx].Name), remote)
+		a.sendLogMsg(LogErr, "path error ", path.Join(remoteDir, entries.Entries[idx].Name), remote)
 		return
 	}
 
-	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, files[idx].Mode)
+	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, entries.Entries[idx].Mode)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
@@ -157,6 +173,37 @@ func (a *App) MakeDir(dirname string) {
 		return
 	}
 	a.cache.invalidate(a.currentPath)
+}
+
+func (a *App) getEntries(dirpath string) (DirEntries, error) {
+	items, err := a.device.List(dirpath)
+	if err != nil {
+		return DirEntries{}, err
+	}
+
+	entries := make([]Entry, 0, max(0, len(items)-2))
+	for _, item := range items {
+		if item.Name == "." || item.Name == ".." {
+			continue
+		}
+
+		entry := Entry{
+			IsDir:        item.IsDir(),
+			Name:         item.Name,
+			Mode:         item.Mode,
+			LastModified: item.LastModified,
+			Path:         path.Join(dirpath, item.Name),
+			// TODO: Size: item
+		}
+
+		if entry.IsDir && !strings.HasSuffix(entry.Path, "/") {
+			entry.Path += "/"
+		}
+
+		entries = append(entries, entry)
+	}
+
+	return DirEntries{Current: dirpath, Parent: path.Dir(dirpath), Entries: entries}, nil
 }
 
 func cleanPath(fpath string) (string, error) {
