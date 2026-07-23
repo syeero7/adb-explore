@@ -17,7 +17,21 @@ export const directory = $state<Dir>({
   sortBy: "name:asc",
 });
 
-let result: Omit<main.DirEntries, "entries" | "convertValues">;
+let result: Omit<main.DirEntries, "entries" | "convertValues"> | undefined;
+
+export function useIsStorageDir() {
+  const value = $derived(
+    directory.current === STORAGE_DIR ||
+      (result && result.parent === "/") ||
+      directory.current === STORAGE_DIR.slice(0, -1)
+  );
+
+  return {
+    get value() {
+      return value;
+    },
+  };
+}
 
 export async function getEntries(dir: Dir) {
   const { entries, ...rest } = await List(dir.current, dir.query, dir.sortBy);
@@ -26,21 +40,11 @@ export async function getEntries(dir: Dir) {
 }
 
 export function toParentDir() {
-  if (isCurrentDirStorage(directory)) return;
-  directory.current = result.parent;
+  directory.current = result!.parent;
 }
 
 export function toStorageDir() {
-  if (isCurrentDirStorage(directory)) return;
   directory.current = STORAGE_DIR;
-}
-
-export function isCurrentDirStorage(dir: Dir) {
-  return (
-    dir.current === STORAGE_DIR ||
-    (result && result.parent === "/") ||
-    dir.current === STORAGE_DIR.slice(0, -1)
-  );
 }
 
 export async function sortBy() {}
