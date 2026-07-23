@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -192,7 +193,7 @@ func (a *App) getEntries(dirpath string) (DirEntries, error) {
 			Mode:         item.Mode,
 			LastModified: item.LastModified,
 			Path:         path.Join(dirpath, item.Name),
-			// TODO: Size: item
+			Size:         toReadableSize(int64(item.Size)),
 		}
 
 		if entry.IsDir && !strings.HasSuffix(entry.Path, "/") {
@@ -269,4 +270,23 @@ func cleanPath(fpath string) (string, error) {
 	}
 
 	return cleanPath, nil
+}
+
+func toReadableSize(size int64) string {
+	const unit int64 = 1000
+
+	if size < unit {
+		return strconv.FormatInt(size, 10) + " B"
+	}
+
+	division := unit
+	var exponent int64 = 0
+	for i := size / unit; i >= unit; i /= unit {
+		division *= unit
+		exponent++
+	}
+
+	const sizes = "kMGTPE"
+	str := strconv.FormatFloat(float64(size)/float64(division), 'f', 2, 64)
+	return strings.Join([]string{str, " ", string(sizes[exponent]), "B"}, "")
 }
