@@ -43,10 +43,8 @@ export namespace main {
 	}
 	export class DirEntries {
 	    parent: string;
-	    current: string;
+	    path: string;
 	    entries: Entry[];
-	    query: string;
-	    sortBy: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DirEntries(source);
@@ -55,10 +53,8 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.parent = source["parent"];
-	        this.current = source["current"];
+	        this.path = source["path"];
 	        this.entries = this.convertValues(source["entries"], Entry);
-	        this.query = source["query"];
-	        this.sortBy = source["sortBy"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

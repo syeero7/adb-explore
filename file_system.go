@@ -1,9 +1,11 @@
 package main
 
 import (
+	"cmp"
 	"errors"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"time"
 )
@@ -19,10 +21,8 @@ type Entry struct {
 
 type DirEntries struct {
 	Parent  string  `json:"parent"`
-	Current string  `json:"current"`
+	Path    string  `json:"path"`
 	Entries []Entry `json:"entries"`
-	Query   string  `json:"query"`
-	SortBy  string  `json:"sortBy"` // NOTE:  name:asc, size:desc
 }
 
 func (a *App) List(path, query, sortBy string) DirEntries {
@@ -34,7 +34,7 @@ func (a *App) List(path, query, sortBy string) DirEntries {
 
 	if entries, ok := a.cache.get(dirpath); ok {
 		a.currentPath = dirpath
-		return entries
+		return a.sortFilterDir(&entries, query, sortBy)
 	}
 
 	entries, err := a.getEntries(dirpath)
@@ -43,9 +43,8 @@ func (a *App) List(path, query, sortBy string) DirEntries {
 		return DirEntries{}
 	}
 
-	a.cache.set(dirpath, entries)
 	a.currentPath = dirpath
-	return entries
+	return a.sortFilterDir(&entries, query, sortBy)
 }
 
 // TODO: add support for push/pull directories
@@ -203,7 +202,58 @@ func (a *App) getEntries(dirpath string) (DirEntries, error) {
 		entries = append(entries, entry)
 	}
 
-	return DirEntries{Current: dirpath, Parent: path.Dir(dirpath), Entries: entries}, nil
+	return DirEntries{Path: dirpath, Parent: path.Dir(dirpath), Entries: entries}, nil
+}
+
+func (a *App) sortFilterDir(dir *DirEntries, query, sortBy string) DirEntries {
+	sorted := sortEntries(dir, sortBy)
+	entries, filtered := filterEntries(sorted, strings.TrimSpace(query))
+	a.cache.set(a.currentPath, *entries)
+	entries.Entries = filtered
+	return *entries
+}
+
+func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
+	if query == "" {
+		return dir, dir.Entries
+	}
+
+	entries := make([]Entry, 0, len(dir.Entries))
+	for _, entry := range dir.Entries {
+		if strings.Contains(entry.Name, query) {
+			entries = append(entries, entry)
+		}
+	}
+
+	return dir, entries
+}
+
+func sortEntries(dir *DirEntries, sortBy string) *DirEntries {
+	parts := strings.Split(sortBy, ":")
+	slices.SortFunc(dir.Entries, func(a, b Entry) int {
+		switch parts[0] {
+		case "name":
+			if parts[1] == "asc" {
+				return cmp.Compare(a.Name, b.Name)
+			}
+
+			return cmp.Compare(b.Name, a.Name)
+		case "size":
+			if parts[1] == "asc" {
+				return cmp.Compare(a.Size, b.Size)
+			}
+
+			return cmp.Compare(b.Size, a.Size)
+		default:
+			if parts[1] == "asc" {
+				return a.LastModified.Compare(b.LastModified)
+			}
+
+			return b.LastModified.Compare(a.LastModified)
+		}
+	})
+
+	return dir
 }
 
 func cleanPath(fpath string) (string, error) {

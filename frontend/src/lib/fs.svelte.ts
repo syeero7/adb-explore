@@ -1,10 +1,12 @@
 import type { main } from "@wails/go/models";
 import { List } from "@wails/go/main/App";
 
+type SortBy = `${"name" | "size" | "lastMod"}:${"asc" | "desc"}`;
+
 type Dir = {
   current: string;
   query: string;
-  sortBy: string;
+  sortBy: SortBy;
 };
 
 const STORAGE_DIR = "/storage/";
@@ -12,7 +14,7 @@ const STORAGE_DIR = "/storage/";
 export const directory = $state<Dir>({
   current: STORAGE_DIR,
   query: "",
-  sortBy: "",
+  sortBy: "name:asc",
 });
 
 let result: Omit<main.DirEntries, "entries" | "convertValues">;
@@ -32,7 +34,5 @@ export async function toStorageDir() {
   if (directory.current === STORAGE_DIR || directory.current === STORAGE_DIR.slice(0, -1)) return;
   directory.current = STORAGE_DIR;
 }
-
-export async function findEntry(query: string) {}
 
 export async function sortBy() {}
