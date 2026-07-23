@@ -1,12 +1,17 @@
 <script lang="ts">
   import { directory, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
+  import { tick } from "svelte";
 
   let isSearching = $state(false);
   let timeout: number | undefined;
+  // svelte-ignore <non_reactive_update>
+  let input: HTMLInputElement | undefined;
 
-  function openSearch() {
+  async function openSearch() {
     isSearching = true;
+    await tick();
+    input?.focus();
   }
 
   function closeSearch() {
@@ -38,7 +43,7 @@
   </button>
 
   {#if isSearching}
-    <input type="text" oninput={search} aria-label="search query" />
+    <input type="text" bind:this={input} oninput={search} aria-label="search query" />
     <button title="close" onclick={closeSearch}>
       {@render svg({ d: CLOSE })}
     </button>
