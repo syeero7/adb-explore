@@ -18,7 +18,7 @@
   async function startADB(e: SubmitEvent) {
     e.preventDefault();
     await NewADBClient(adbPath, port);
-    devices = await GetDeviceList();
+    await refreshDevices();
   }
 
   async function selectDevice(e: SubmitEvent) {
@@ -38,6 +38,7 @@
 
   async function refreshDevices() {
     devices = await GetDeviceList();
+    if (devices.length > 0) selectedDevice = 0;
   }
 </script>
 
@@ -61,7 +62,9 @@
   <label>
     <span>Device</span>
     <select required bind:value={selectedDevice}>
-      <option>No device</option>
+      {#if devices.length === 0}
+        <option>No device</option>
+      {/if}
 
       {#each devices as device, i}
         <option value={i}>{device}</option>
