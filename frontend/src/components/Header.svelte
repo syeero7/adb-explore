@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { directory, toParentDir, toStorageDir } from "@/lib/fs.svelte";
+  import { directory, isCurrentDirStorage, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
   import { tick } from "svelte";
 
@@ -34,11 +34,17 @@
     {@render svg({ d: RELOAD })}
   </button>
 
-  <button title="go to parent directory" onclick={toParentDir}>
+  <button
+    title="go to parent directory"
+    onclick={toParentDir}
+    disabled={isCurrentDirStorage(directory)}>
     {@render svg({ d: UP_ARROW })}
   </button>
 
-  <button title="go to storage directory" onclick={toStorageDir}>
+  <button
+    title="go to storage directory"
+    onclick={toStorageDir}
+    disabled={isCurrentDirStorage(directory)}>
     {@render svg({ d: STORAGE })}
   </button>
 

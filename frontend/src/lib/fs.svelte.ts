@@ -25,14 +25,22 @@ export async function getEntries(dir: Dir) {
   return entries;
 }
 
-export async function toParentDir() {
-  if (directory.current === STORAGE_DIR || (result && result.parent === "/")) return;
+export function toParentDir() {
+  if (isCurrentDirStorage(directory)) return;
   directory.current = result.parent;
 }
 
-export async function toStorageDir() {
-  if (directory.current === STORAGE_DIR || directory.current === STORAGE_DIR.slice(0, -1)) return;
+export function toStorageDir() {
+  if (isCurrentDirStorage(directory)) return;
   directory.current = STORAGE_DIR;
+}
+
+export function isCurrentDirStorage(dir: Dir) {
+  return (
+    dir.current === STORAGE_DIR ||
+    (result && result.parent === "/") ||
+    dir.current === STORAGE_DIR.slice(0, -1)
+  );
 }
 
 export async function sortBy() {}
