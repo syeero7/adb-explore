@@ -1,7 +1,14 @@
 <script lang="ts">
   import type { main } from "@wails/go/models";
   import Header from "./Header.svelte";
-  import { type InfoTitle, getEntries, directory, useIsStorageDir, sortBy } from "@/lib/fs.svelte";
+  import {
+    type InfoTitle,
+    getEntries,
+    directory,
+    useIsStorageDir,
+    sortBy,
+    toDir,
+  } from "@/lib/fs.svelte";
   import { svg, DOWN_ARROW, UP_ARROW } from "@/lib/svg";
 
   let selected: string[] = $state([]);
@@ -42,7 +49,11 @@
     <td>
       <input type="checkbox" value={entry.path} bind:group={selected} disabled={isStorageDir} />
     </td>
-    <td>{entry.name}</td>
+    <td>
+      <button onclick={() => toDir(entry.path)}>
+        {entry.name}
+      </button>
+    </td>
     <td>{entry.isDir || isSymlink(entry.mode) ? "" : entry.size}</td>
     {const modified = new Date(entry.lastModified)}
     <td>{modified.toLocaleDateString()}</td>

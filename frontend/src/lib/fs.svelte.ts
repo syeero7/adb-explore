@@ -52,6 +52,11 @@ export function toStorageDir() {
   directory.refresh = 0;
 }
 
+export function toDir(path: string) {
+  directory.current = path;
+  directory.refresh = 0;
+}
+
 export function sortBy(title: InfoTitle, sortBy: SortBy) {
   const isActive = sortBy.startsWith(title);
   const isAsc = sortBy.endsWith("asc");
