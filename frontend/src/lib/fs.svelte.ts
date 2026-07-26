@@ -1,7 +1,8 @@
 import type { main } from "@wails/go/models";
 import { List } from "@wails/go/main/App";
 
-type SortBy = `${"name" | "size" | "lastMod"}:${"asc" | "desc"}`;
+export type InfoTitle = "name" | "size" | "date modified";
+type SortBy = `${InfoTitle}:${"asc" | "desc"}`;
 
 type Dir = {
   current: string;
@@ -51,4 +52,17 @@ export function toStorageDir() {
   directory.refresh = 0;
 }
 
-export async function sortBy() {}
+export function sortBy(title: InfoTitle, sortBy: SortBy) {
+  const isActive = sortBy.startsWith(title);
+  const isAsc = sortBy.endsWith("asc");
+  const handler = () => {
+    if (!isActive) {
+      directory.sortBy = `${title}:asc`;
+      return;
+    }
+
+    directory.sortBy = `${title}:${isAsc ? "desc" : "asc"}`;
+  };
+
+  return { isActive, isAsc, handler };
+}
