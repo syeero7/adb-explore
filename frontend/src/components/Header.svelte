@@ -15,6 +15,11 @@
     input?.focus();
   }
 
+  function refreshDir() {
+    clearTimeout(timeout);
+    directory.refresh = directory.refresh < 1 ? 1 : directory.refresh + 1;
+  }
+
   function closeSearch() {
     clearTimeout(timeout);
     isSearching = false;
@@ -31,7 +36,7 @@
 </script>
 
 <header>
-  <button title="refresh current directory">
+  <button title="refresh current directory" onclick={refreshDir}>
     {@render svg({ d: RELOAD })}
   </button>
 

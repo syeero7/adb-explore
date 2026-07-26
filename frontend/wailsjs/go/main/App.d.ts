@@ -12,7 +12,7 @@ export function GetDeviceList():Promise<Array<string>>;
 
 export function KillServer(arg1:string,arg2:number):Promise<void>;
 
-export function List(arg1:string,arg2:string,arg3:string):Promise<main.DirEntries>;
+export function List(arg1:string,arg2:string,arg3:string,arg4:number):Promise<main.DirEntries>;
 
 export function MakeDir(arg1:string):Promise<void>;
 

@@ -26,7 +26,7 @@ type DirEntries struct {
 	Entries []Entry `json:"entries"`
 }
 
-func (a *App) List(path, query, sortBy string) DirEntries {
+func (a *App) List(path, query, sortBy string, refresh int) DirEntries {
 	dirpath, err := cleanPath(path)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
@@ -34,8 +34,12 @@ func (a *App) List(path, query, sortBy string) DirEntries {
 	}
 
 	if entries, ok := a.cache.get(dirpath); ok {
-		a.currentPath = dirpath
-		return a.sortFilterDir(&entries, query, sortBy)
+		if refresh == 0 {
+			a.currentPath = dirpath
+			return a.sortFilterDir(&entries, query, sortBy)
+		}
+
+		a.cache.invalidate(dirpath)
 	}
 
 	entries, err := a.getEntries(dirpath)
