@@ -249,13 +249,21 @@ func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
 func sortEntries(dir *DirEntries, sortBy string) *DirEntries {
 	parts := strings.Split(sortBy, ":")
 	slices.SortFunc(dir.Entries, func(a, b Entry) int {
+		if a.IsDir != b.IsDir {
+			if a.IsDir {
+				return -1
+			}
+			return 1
+		}
+
 		switch parts[0] {
 		case "name":
+			aName, bName := strings.ToLower(a.Name), strings.ToLower(b.Name)
 			if parts[1] == "asc" {
-				return cmp.Compare(a.Name, b.Name)
+				return cmp.Compare(aName, bName)
 			}
 
-			return cmp.Compare(b.Name, a.Name)
+			return cmp.Compare(bName, aName)
 		case "size":
 			if parts[1] == "asc" {
 				return cmp.Compare(a.Size, b.Size)
