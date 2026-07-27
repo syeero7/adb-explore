@@ -19,6 +19,7 @@ type Entry struct {
 	Ext          string      `json:"ext"`
 	Mode         os.FileMode `json:"mode"`
 	LastModified time.Time   `json:"lastModified"`
+	_size        uint32
 }
 
 type DirEntries struct {
@@ -211,6 +212,7 @@ func (a *App) getEntries(dirpath string) (DirEntries, error) {
 			Ext:          getFileExt(item.Name, item.IsDir()),
 			Path:         path.Join(dirpath, item.Name),
 			Size:         toReadableSize(int64(item.Size)),
+			_size:        item.Size,
 		}
 
 		if entry.IsDir && !strings.HasSuffix(entry.Path, "/") {
@@ -266,10 +268,10 @@ func sortEntries(dir *DirEntries, sortBy string) *DirEntries {
 			return cmp.Compare(bName, aName)
 		case "size":
 			if parts[1] == "asc" {
-				return cmp.Compare(a.Size, b.Size)
+				return cmp.Compare(a._size, b._size)
 			}
 
-			return cmp.Compare(b.Size, a.Size)
+			return cmp.Compare(b._size, a._size)
 		default:
 			if parts[1] == "asc" {
 				return a.LastModified.Compare(b.LastModified)
