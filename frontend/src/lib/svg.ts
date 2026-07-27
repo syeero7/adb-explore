@@ -1,10 +1,11 @@
 import { createRawSnippet } from "svelte";
 
-export const svg = createRawSnippet<[{ d: string }]>((props) => {
-  const { d } = props();
+export const svg = createRawSnippet<[{ d: string; fileExt?: string }]>((props) => {
+  const { d, fileExt } = props();
+  const data = fileExt ? `data-file-ext=${fileExt}` : "";
   return {
     render: () =>
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="${d}" /></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" ${data} ><path d="${d}" /></svg>`,
   };
 });
 
@@ -46,3 +47,9 @@ export const STORAGE =
 
 export const SEARCH =
   "M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580t75.5-184.5T380-840t184.5 75.5T640-580q0 44-14 83t-38 69l252 252zM380-400q75 0 127.5-52.5T560-580t-52.5-127.5T380-760t-127.5 52.5T200-580t52.5 127.5T380-400";
+
+export const FOLDER =
+  "M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160zm0-80h640v-400H447l-80-80H160zm0 0v-480z";
+
+export const FILE =
+  "M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80zm280-520v-200H240v640h480v-440zM240-800v200zv640z";

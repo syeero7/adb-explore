@@ -9,7 +9,7 @@
     sortBy,
     toDir,
   } from "@/lib/fs.svelte";
-  import { svg, DOWN_ARROW, UP_ARROW } from "@/lib/svg";
+  import { svg, DOWN_ARROW, UP_ARROW, FILE, FOLDER } from "@/lib/svg";
 
   let selected: string[] = $state([]);
 
@@ -52,13 +52,28 @@
         bind:group={selected}
         disabled={isStorageDir(directory.current)} />
     </td>
+
+    {const isFile = !entry.isDir && !isSymlink(entry.mode)}
     <td>
-      <!-- FIXME: no clickable files -->
-      <button onclick={() => toDir(entry.path)}>
-        {entry.name}
-      </button>
+      {#if isFile}
+        <div>
+          {@render svg({ d: FILE, fileExt: entry.ext.length < 5 ? entry.ext : undefined })}
+          <span>
+            {entry.name}
+          </span>
+        </div>
+      {:else}
+        <button ondblclick={() => toDir(entry.path)}>
+          {@render svg({ d: FOLDER })}
+          <span>
+            {entry.name}
+          </span>
+        </button>
+      {/if}
     </td>
-    <td>{entry.isDir || isSymlink(entry.mode) ? "" : entry.size}</td>
+
+    <td>{isFile ? entry.size : ""}</td>
+
     {const modified = new Date(entry.lastModified)}
     <td>{modified.toLocaleDateString()}</td>
   </tr>

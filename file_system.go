@@ -16,6 +16,7 @@ type Entry struct {
 	Name         string      `json:"name"`
 	Path         string      `json:"path"`
 	Size         string      `json:"size"`
+	Ext          string      `json:"ext"`
 	Mode         os.FileMode `json:"mode"`
 	LastModified time.Time   `json:"lastModified"`
 }
@@ -207,6 +208,7 @@ func (a *App) getEntries(dirpath string) (DirEntries, error) {
 			Name:         item.Name,
 			Mode:         item.Mode,
 			LastModified: item.LastModified,
+			Ext:          getFileExt(item.Name, item.IsDir()),
 			Path:         path.Join(dirpath, item.Name),
 			Size:         toReadableSize(int64(item.Size)),
 		}
@@ -304,4 +306,15 @@ func toReadableSize(size int64) string {
 	const sizes = "kMGTPE"
 	str := strconv.FormatFloat(float64(size)/float64(division), 'f', 2, 64)
 	return strings.Join([]string{str, " ", string(sizes[exponent]), "B"}, "")
+}
+
+func getFileExt(name string, isDir bool) string {
+	if !isDir {
+		ext := path.Ext(name)
+		if ext != "" {
+			return strings.ToUpper(ext[1:])
+		}
+	}
+
+	return ""
 }

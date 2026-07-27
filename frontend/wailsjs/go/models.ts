@@ -5,6 +5,7 @@ export namespace main {
 	    name: string;
 	    path: string;
 	    size: string;
+	    ext: string;
 	    mode: number;
 	    // Go type: time
 	    lastModified: any;
@@ -19,6 +20,7 @@ export namespace main {
 	        this.name = source["name"];
 	        this.path = source["path"];
 	        this.size = source["size"];
+	        this.ext = source["ext"];
 	        this.mode = source["mode"];
 	        this.lastModified = this.convertValues(source["lastModified"], null);
 	    }
