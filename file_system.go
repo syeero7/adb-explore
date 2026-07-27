@@ -179,15 +179,26 @@ func (a *App) MakeDir(dirname string) {
 	a.cache.invalidate(a.currentPath)
 }
 
+func (a *App) setIgnoreDirs() {
+	if a.ignoreDirs == nil {
+		a.ignoreDirs = make(map[string]struct{})
+	}
+
+	dirNames := []string{".", "..", "emulated", "self"}
+	for _, key := range dirNames {
+		a.ignoreDirs[key] = struct{}{}
+	}
+}
+
 func (a *App) getEntries(dirpath string) (DirEntries, error) {
 	items, err := a.device.List(dirpath)
 	if err != nil {
 		return DirEntries{}, err
 	}
 
-	entries := make([]Entry, 0, max(0, len(items)-2))
+	entries := make([]Entry, 0, len(items))
 	for _, item := range items {
-		if item.Name == "." || item.Name == ".." {
+		if _, ok := a.ignoreDirs[item.Name]; ok {
 			continue
 		}
 
