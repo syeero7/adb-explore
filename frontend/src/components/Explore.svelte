@@ -5,14 +5,13 @@
     type InfoTitle,
     getEntries,
     directory,
-    useIsStorageDir,
+    isStorageDir,
     sortBy,
     toDir,
   } from "@/lib/fs.svelte";
   import { svg, DOWN_ARROW, UP_ARROW } from "@/lib/svg";
 
   let selected: string[] = $state([]);
-  const isStorageDir = useIsStorageDir().value;
 
   const isSymlink = (mode: number) => (mode & 0xf000) === 0xa000;
 </script>
@@ -47,9 +46,14 @@
 {#snippet row(entry: main.Entry)}
   <tr>
     <td>
-      <input type="checkbox" value={entry.path} bind:group={selected} disabled={isStorageDir} />
+      <input
+        type="checkbox"
+        value={entry.path}
+        bind:group={selected}
+        disabled={isStorageDir(directory.current)} />
     </td>
     <td>
+      <!-- FIXME: no clickable files -->
       <button onclick={() => toDir(entry.path)}>
         {entry.name}
       </button>

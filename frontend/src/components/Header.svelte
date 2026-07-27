@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { directory, useIsStorageDir, toParentDir, toStorageDir } from "@/lib/fs.svelte";
+  import { directory, isStorageDir, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
   import { tick } from "svelte";
 
@@ -7,7 +7,6 @@
   let timeout: number | undefined;
   // svelte-ignore <non_reactive_update>
   let input: HTMLInputElement | undefined;
-  const isStorageDir = useIsStorageDir().value;
 
   async function openSearch() {
     isSearching = true;
@@ -40,11 +39,17 @@
     {@render svg({ d: RELOAD })}
   </button>
 
-  <button title="go to parent directory" onclick={toParentDir} disabled={isStorageDir}>
+  <button
+    title="go to parent directory"
+    onclick={toParentDir}
+    disabled={isStorageDir(directory.current)}>
     {@render svg({ d: UP_ARROW })}
   </button>
 
-  <button title="go to storage directory" onclick={toStorageDir} disabled={isStorageDir}>
+  <button
+    title="go to storage directory"
+    onclick={toStorageDir}
+    disabled={isStorageDir(directory.current)}>
     {@render svg({ d: STORAGE })}
   </button>
 

@@ -1,4 +1,3 @@
-import type { main } from "@wails/go/models";
 import { List } from "@wails/go/main/App";
 
 export type InfoTitle = "name" | "size" | "date modified";
@@ -20,30 +19,20 @@ export const directory = $state<Dir>({
   refresh: 0,
 });
 
-let result: Omit<main.DirEntries, "entries" | "convertValues"> | undefined;
+let parentDir = $state("/");
 
-export function useIsStorageDir() {
-  const value = $derived(
-    directory.current === STORAGE_DIR ||
-      (result && result.parent === "/") ||
-      directory.current === STORAGE_DIR.slice(0, -1),
-  );
-
-  return {
-    get value() {
-      return value;
-    },
-  };
+export function isStorageDir(dir: string) {
+  return dir === STORAGE_DIR || dir === STORAGE_DIR.slice(0, -1);
 }
 
 export async function getEntries(dir: Dir) {
-  const { entries, ...rest } = await List(dir.current, dir.query, dir.sortBy, dir.refresh);
-  result = rest;
+  const { entries, parent } = await List(dir.current, dir.query, dir.sortBy, dir.refresh);
+  parentDir = parent;
   return entries;
 }
 
 export function toParentDir() {
-  directory.current = result!.parent;
+  directory.current = parentDir;
   directory.refresh = 0;
 }
 
