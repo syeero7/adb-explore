@@ -12,7 +12,7 @@
 
   let port = $state(5037);
   let adbPath = $state("/usr/bin/adb");
-  let selectedDevice = $state<number>();
+  let selectedDevice = $state<number | null>();
   let devices = $state<string[]>([]);
 
   async function startADB(e: SubmitEvent) {
@@ -30,6 +30,8 @@
 
   async function killServer() {
     await KillServer(adbPath, port);
+    devices = [];
+    selectedDevice = null;
   }
 
   async function downloadADB() {
@@ -38,7 +40,8 @@
 
   async function refreshDevices() {
     devices = await GetDeviceList();
-    if (devices.length > 0) selectedDevice = 0;
+    if (devices == null || devices.length === 0) return;
+    selectedDevice = 0;
   }
 </script>
 
@@ -62,7 +65,7 @@
   <label>
     <span>Device</span>
     <select required bind:value={selectedDevice}>
-      {#if devices.length === 0}
+      {#if devices == null || devices.length === 0}
         <option>No device</option>
       {/if}
 
