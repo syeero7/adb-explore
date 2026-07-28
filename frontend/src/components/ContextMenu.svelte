@@ -1,15 +1,13 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
   import type { MouseEventHandler } from "svelte/elements";
+  import { toDir, directory, isStorageDir } from "@/lib/fs.svelte";
+  import { svg, CREATE_DIR, DELETE, DOWNLOAD, OPEN_DIR, RENAME, UPLOAD } from "@/lib/svg";
 
   let { selected }: { selected: string[] } = $props();
 
-  let menu = $state({
-    height: 0,
-    width: 0,
-    current: "",
-    isOpen: false,
-  });
+  let menu = $state({ height: 0, width: 0, isOpen: false });
+  let currentItem = $state({ path: "", isFile: false });
   let positions = $state({
     cursor: { x: 0, y: 0 },
     window: { height: 0, width: 0 },
@@ -28,7 +26,7 @@
     e.preventDefault();
 
     if (!(e.target instanceof HTMLElement)) return;
-    const row = e.target.closest("tbody > tr");
+    const row = e.target.closest<HTMLTableRowElement>("tbody > tr");
     if (row == null || e.target.closest("td > input") != null) return;
     positions.cursor = { x: e.clientX, y: e.clientY };
     positions.window = { height: window.innerHeight, width: window.innerWidth };
@@ -37,7 +35,8 @@
     if (win.height - cursor.y < menu.height) positions.cursor.y -= menu.height;
     if (win.width - cursor.x < menu.width) positions.cursor.x -= menu.width;
 
-    menu.current = row.querySelector<HTMLInputElement>("td > input")?.value || "";
+    currentItem.path = row.querySelector<HTMLInputElement>("td > input")?.value || "";
+    currentItem.isFile = row.dataset.isFile === "true";
     menu.isOpen = true;
   };
 </script>
@@ -45,7 +44,37 @@
 <svelte:window {oncontextmenu} {onclick} />
 
 {#if menu.isOpen}
-  <menu {@attach getContextMenuDimension}> </menu>
+  <menu {@attach getContextMenuDimension}>
+    {const { path, isFile } = currentItem}
+    {const isStorage = isStorageDir(directory.current)}
+
+    {@render item("open", OPEN_DIR, () => toDir(path), isFile)}
+    {@render item("download", DOWNLOAD, () => {}, isStorage || !isFile)}
+    {@render item("delete", DELETE, () => {}, isStorage)}
+    {@render item("rename", RENAME, () => {}, isStorage)}
+    <hr />
+    {@render item("upload", UPLOAD, () => {}, isStorage)}
+    {@render item("create directory", CREATE_DIR, () => {}, isStorage)}
+    <hr />
+
+    {const hasItems = selected.length > 0}
+    {@render item("download selected", DOWNLOAD, () => {}, isStorage || hasItems)}
+    {@render item("delete selected", DELETE, () => {}, isStorage || hasItems)}
+  </menu>
 {/if}
+
+{#snippet item(
+  name: string,
+  icon: string,
+  onclick: MouseEventHandler<HTMLButtonElement>,
+  disabled = false,
+)}
+  <li>
+    <button {onclick} disabled={disabled!!}>
+      {@render svg({ d: icon })}
+      <span>{name}</span>
+    </button>
+  </li>
+{/snippet}
 
 <style></style>
