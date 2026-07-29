@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"errors"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -270,6 +271,67 @@ func (a *App) pullDir(remote, local string) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (a *App) pushDir(local, remote string) error {
+	type F2Push struct {
+		local  string
+		remote string
+	}
+
+	var dirsToMake []string
+	var filesToPush []F2Push
+
+	err := filepath.WalkDir(local, func(fpath string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		relPath, err := filepath.Rel(local, fpath)
+		if err != nil {
+			return err
+		}
+
+		remotePath := filepath.ToSlash(filepath.Join(remote, relPath))
+		if entry.IsDir() {
+			dirsToMake = append(dirsToMake, strconv.Quote(remotePath))
+		} else {
+			filesToPush = append(filesToPush, F2Push{local: fpath, remote: remotePath})
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if _, err := a.device.RunShellCommand("mkdir -p", strings.Join(dirsToMake, " ")); err != nil {
+		return err
+	}
+
+	for _, f2p := range filesToPush {
+		err = func(f F2Push) error {
+			file, err := os.Open(f.local)
+			if err != nil {
+				return err
+			}
+
+			defer closeIO(file)
+			stat, err := file.Stat()
+			if err != nil {
+				return err
+			}
+
+			return a.device.Push(file, f.remote, stat.ModTime(), stat.Mode())
+		}(f2p)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
