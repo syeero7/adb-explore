@@ -1,9 +1,9 @@
 export namespace main {
 	
 	export class Entry {
+	    id: string;
 	    isDir: boolean;
 	    name: string;
-	    path: string;
 	    size: string;
 	    ext: string;
 	    mode: number;
@@ -16,9 +16,9 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.isDir = source["isDir"];
 	        this.name = source["name"];
-	        this.path = source["path"];
 	        this.size = source["size"];
 	        this.ext = source["ext"];
 	        this.mode = source["mode"];

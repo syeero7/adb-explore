@@ -14,9 +14,9 @@ import (
 )
 
 type Entry struct {
+	Id           string      `json:"id"`
 	IsDir        bool        `json:"isDir"`
 	Name         string      `json:"name"`
-	Path         string      `json:"path"`
 	Size         string      `json:"size"`
 	Ext          string      `json:"ext"`
 	Mode         os.FileMode `json:"mode"`
@@ -212,13 +212,9 @@ func (a *App) getEntries(dirpath string) (DirEntries, error) {
 			Mode:         item.Mode,
 			LastModified: item.LastModified,
 			Ext:          getFileExt(item.Name, item.IsDir()),
-			Path:         path.Join(dirpath, item.Name),
+			Id:           createEntryId(path.Join(dirpath, item.Name), item.IsDir()),
 			Size:         toReadableSize(int64(item.Size)),
 			_size:        item.Size,
-		}
-
-		if entry.IsDir && !strings.HasSuffix(entry.Path, "/") {
-			entry.Path += "/"
 		}
 
 		entries = append(entries, entry)
@@ -432,4 +428,28 @@ func getFileExt(name string, isDir bool) string {
 	}
 
 	return ""
+}
+
+// prefix path with "0|" if its a directory and prefix with "1|" if its a symlink or regular file
+func createEntryId(fpath string, isDir bool) string {
+	prefix := '0'
+	if !isDir {
+		prefix = '1'
+	}
+
+	return strings.Join([]string{string(prefix), "|", fpath}, "")
+}
+
+// returns true if prefix is "0|" (directory). remove path prefixes "0|" and "1|"
+func parseEntryId(fpath string) (bool, string) {
+	trimmed := strings.TrimSpace(fpath)
+	if entryPath, ok := strings.CutPrefix(trimmed, "0|"); ok {
+		return true, entryPath
+	}
+
+	if entryPath, ok := strings.CutPrefix(trimmed, "1|"); ok {
+		return false, entryPath
+	}
+
+	panic("unkown entry id prefix")
 }

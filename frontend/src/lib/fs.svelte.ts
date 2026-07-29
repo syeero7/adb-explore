@@ -42,8 +42,13 @@ export function toStorageDir() {
 }
 
 export function toDir(path: string) {
-  directory.current = path;
+  // NOTE: paths prefix with "0|" points to a directory
+  directory.current = removePrefix(path, "0|");
   directory.refresh = 0;
+}
+
+export function removePrefix(str: string, prefix: string) {
+  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
 }
 
 export function sortBy(title: InfoTitle, sortBy: SortBy) {

@@ -8,6 +8,7 @@
     isStorageDir,
     sortBy,
     toDir,
+    removePrefix,
   } from "@/lib/fs.svelte";
   import { svg, DOWN_ARROW, UP_ARROW, FILE, FOLDER } from "@/lib/svg";
 
@@ -44,13 +45,13 @@
 {/await}
 
 {#snippet row(entry: main.Entry)}
+  {const isStorage = isStorageDir(directory.current)}
+  {const path = isSymlink(entry.mode) ? removePrefix(entry.id, "1|") : entry.id}
+  <!-- NOTE: paths prefix with "1|" points to a symlink or regular file -->
+
   <tr>
     <td>
-      <input
-        type="checkbox"
-        value={entry.path}
-        bind:group={selected}
-        disabled={isStorageDir(directory.current)} />
+      <input type="checkbox" value={path} bind:group={selected} disabled={isStorage} />
     </td>
 
     {const isFile = !entry.isDir && !isSymlink(entry.mode)}
@@ -63,7 +64,7 @@
           </span>
         </div>
       {:else}
-        <button ondblclick={() => toDir(entry.path)}>
+        <button ondblclick={() => toDir(path)}>
           {@render svg({ d: FOLDER })}
           <span>
             {entry.name}
