@@ -4,7 +4,7 @@ import {main} from '../models';
 
 export function Delete(arg1:string):Promise<void>;
 
-export function Download(arg1:number,arg2:string,arg3:string):Promise<void>;
+export function Download(arg1:string,arg2:Array<string>):Promise<void>;
 
 export function DownloadADB():Promise<string>;
 

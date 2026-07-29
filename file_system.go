@@ -60,40 +60,32 @@ func (a *App) List(path, query, sortBy string, refresh int) DirEntries {
 // maybe compress and decompress directories
 
 // NOTE: does not support pulling directories
-func (a *App) Download(idx int, remote, local string) {
-	entries, ok := a.cache.get(a.currentPath)
-	if !ok {
-		a.sendLogMsg(LogErr, "current dir not found")
-		return
-	}
+func (a *App) Download(downloadDir string, paths []string) {
+	var localPath string
+	for _, fpath := range paths {
+		isDir, entryPath := parseEntryId(fpath)
+		remotePath, err := cleanPath(entryPath)
+		if err != nil {
+			a.sendLogMsg(LogErr, err.Error())
+			return
+		}
 
-	if l := len(entries.Entries); l <= 0 || l <= idx {
-		a.sendLogMsg(LogErr, "invalid index")
-		return
-	}
+		if localPath == "" {
+			localPath = filepath.Join(downloadDir, path.Base(path.Dir(remotePath)))
+		}
 
-	remoteDir, err := cleanPath(path.Dir(remote))
-	if err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
-	}
+		if isDir {
+			if err := a.pullDir(remotePath, localPath); err != nil {
+				a.sendLogMsg(LogErr, err.Error())
+				return
+			}
+			continue
+		}
 
-	if remote != path.Join(remoteDir, entries.Entries[idx].Name) {
-		// TODO: err message
-		a.sendLogMsg(LogErr, "path error ", path.Join(remoteDir, entries.Entries[idx].Name), remote)
-		return
-	}
-
-	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, entries.Entries[idx].Mode)
-	if err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
-	}
-
-	defer closeIO(dest)
-	if err := a.device.Pull(remote, dest); err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
+		if err := a.pullFile(remotePath, localPath, os.ModeDir); err != nil {
+			a.sendLogMsg(LogErr, err.Error())
+			return
+		}
 	}
 }
 
