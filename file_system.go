@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -231,6 +232,45 @@ func (a *App) sortFilterDir(dir *DirEntries, query, sortBy string) DirEntries {
 	a.cache.set(a.currentPath, *entries)
 	entries.Entries = filtered
 	return *entries
+}
+
+func (a *App) pullDir(remote, local string) error {
+	if err := os.MkdirAll(local, os.ModePerm); err != nil {
+		return err
+	}
+
+	entries, err := a.device.List(remote)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if entry.Name == "." || entry.Name == ".." {
+			continue
+		}
+
+		remotePath := path.Join(remote, entry.Name)
+		localPath := filepath.Join(local, entry.Name)
+
+		if entry.IsDir() {
+			if err := a.pullDir(remotePath, localPath); err != nil {
+				return err
+			}
+			continue
+		}
+
+		dest, err := os.OpenFile(localPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, entry.Mode)
+		if err != nil {
+			return err
+		}
+
+		err = a.device.Pull(remotePath, dest)
+		closeIO(dest)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
