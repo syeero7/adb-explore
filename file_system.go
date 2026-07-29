@@ -260,14 +260,7 @@ func (a *App) pullDir(remote, local string) error {
 			continue
 		}
 
-		dest, err := os.OpenFile(localPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, entry.Mode)
-		if err != nil {
-			return err
-		}
-
-		err = a.device.Pull(remotePath, dest)
-		closeIO(dest)
-		if err != nil {
+		if err := a.pullFile(remotePath, localPath, entry.Mode); err != nil {
 			return err
 		}
 	}
@@ -312,27 +305,37 @@ func (a *App) pushDir(local, remote string) error {
 	}
 
 	for _, f2p := range filesToPush {
-		err = func(f F2Push) error {
-			file, err := os.Open(f.local)
-			if err != nil {
-				return err
-			}
-
-			defer closeIO(file)
-			stat, err := file.Stat()
-			if err != nil {
-				return err
-			}
-
-			return a.device.Push(file, f.remote, stat.ModTime(), stat.Mode())
-		}(f2p)
-
-		if err != nil {
+		if err := a.pushFile(f2p.local, f2p.remote); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (a *App) pullFile(remote, local string, mode os.FileMode) error {
+	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+	if err != nil {
+		return err
+	}
+
+	defer closeIO(dest)
+	return a.device.Pull(remote, dest)
+}
+
+func (a *App) pushFile(local, remote string) error {
+	file, err := os.Open(local)
+	if err != nil {
+		return err
+	}
+
+	defer closeIO(file)
+	stat, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	return a.device.Push(file, remote, stat.ModTime(), stat.Mode())
 }
 
 func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
