@@ -65,6 +65,7 @@ func (a *App) List(path, query, sortBy string, refresh int) DirEntries {
 func (a *App) Download(downloadDir string, paths []string) {
 	dirpath := a.getDownloadDirPath(downloadDir)
 	if dirpath == "" {
+		a.sendLogMsg(LogWarn, "no download directory found")
 		return
 	}
 
