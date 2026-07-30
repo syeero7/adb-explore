@@ -1,5 +1,8 @@
 <script lang="ts">
+  import type { MouseEventHandler } from "svelte/elements";
   import Logs from "./Logs.svelte";
+  import { router } from "@/lib/router.svelte";
+  import { svg, RELOAD, TARGET } from "@/lib/svg";
   import {
     NewADBClient,
     SelectDevice,
@@ -7,18 +10,18 @@
     DownloadADB,
     GetDeviceList,
     ConnectToServer,
+    SelectDownloadDir,
+    SelectADBExecutable,
   } from "@wails/go/main/App";
-  import { router } from "@/lib/router.svelte";
-  import { svg, RELOAD } from "@/lib/svg";
 
   let port = $state(5037);
-  let adbPath = $state("/usr/bin/adb");
+  let paths = $state({ downloadDir: "", adb: "/usr/bin/adb" });
   let selectedDevice = $state<number | null>();
   let devices = $state<string[]>([]);
 
   async function startADB(e: SubmitEvent) {
     e.preventDefault();
-    await NewADBClient(adbPath, port);
+    await NewADBClient(paths.adb, port);
     await refreshDevices();
   }
 
@@ -30,24 +33,32 @@
   async function selectDevice(e: SubmitEvent) {
     e.preventDefault();
     if (selectedDevice == null) return;
-    await SelectDevice(selectedDevice);
+    await SelectDevice(selectedDevice, paths.downloadDir);
     router.current = "explore";
   }
 
   async function killServer() {
-    await KillServer(adbPath, port);
+    await KillServer(paths.adb, port);
     devices = [];
     selectedDevice = null;
   }
 
   async function downloadADB() {
-    adbPath = await DownloadADB();
+    paths.adb = await DownloadADB();
   }
 
   async function refreshDevices() {
     devices = await GetDeviceList();
     if (devices == null || devices.length === 0) return;
     selectedDevice = 0;
+  }
+
+  async function selectADBExecutable() {
+    paths.adb = await SelectADBExecutable();
+  }
+
+  async function selectDownloadDir() {
+    paths.downloadDir = await SelectDownloadDir();
   }
 </script>
 
@@ -57,10 +68,8 @@
     <input required bind:value={port} type="number" />
   </label>
 
-  <label>
-    <span>ADB executable path</span>
-    <input required type="text" bind:value={adbPath} />
-  </label>
+  {@render pathInput(paths, "adb", "ADB executable path", selectADBExecutable)}
+
   <!-- TODO: try to auto detect adb executable path -->
   <!-- TODO: allow selecting adb execuable using wails select/open file dialog -->
 
@@ -86,6 +95,8 @@
     {@render svg({ d: RELOAD })}
   </button>
 
+  {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
+
   <button type="submit" disabled={typeof selectedDevice !== "number"}>Select</button>
 </form>
 
@@ -97,6 +108,26 @@
   <button type="button" onclick={killServer}>Kill ADB server</button>
   <Logs />
 </div>
+
+{#snippet pathInput(
+  values: typeof paths,
+  key: keyof typeof paths,
+  label: string,
+  onclick: MouseEventHandler<HTMLButtonElement>,
+)}
+  <div>
+    <label>
+      <span>{label}</span>
+      <input required type="text" bind:value={values[key]} />
+    </label>
+    <button
+      {onclick}
+      type="button"
+      title={`select ${key === "adb" ? "adb executable" : "download directpry"}`}>
+      {@render svg({ d: TARGET })}
+    </button>
+  </div>
+{/snippet}
 
 <style>
 </style>

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	goadb "github.com/electricbubble/gadb"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
@@ -16,6 +17,7 @@ type App struct {
 	client      goadb.Client
 	device      goadb.Device
 	ignoreDirs  map[string]struct{}
+	downloadDir string
 }
 
 func NewApp() *App {
@@ -75,7 +77,7 @@ func (a *App) GetDeviceList() []string {
 	return labels
 }
 
-func (a *App) SelectDevice(idx int) {
+func (a *App) SelectDevice(idx int, downloadDir string) {
 	devices, err := a.client.DeviceList()
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
@@ -89,6 +91,7 @@ func (a *App) SelectDevice(idx int) {
 
 	a.device = devices[idx]
 	a.cache = *newDirCache(5)
+	a.downloadDir = downloadDir
 	a.setIgnoreDirs()
 }
 
@@ -126,4 +129,32 @@ func (a *App) KillServer(adbPath string, port int) {
 	if err := killADBServer(adbPath, port); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (a *App) SelectADBExecutable() string {
+	opt := runtime.OpenDialogOptions{
+		Title:   "Select adb executable",
+		Filters: []runtime.FileFilter{{DisplayName: "adb executable (adb, adb.exe)", Pattern: "adb;adb.exe"}},
+	}
+
+	fpath, err := runtime.OpenFileDialog(a.ctx, opt)
+	if err == nil {
+		return fpath
+	}
+	a.sendLogMsg(LogErr, err.Error())
+	return ""
+}
+
+func (a *App) SelectDownloadDir() string {
+	opt := runtime.OpenDialogOptions{
+		Title:                "Select a directory to save download files",
+		CanCreateDirectories: true,
+	}
+
+	dirpath, err := runtime.OpenDirectoryDialog(a.ctx, opt)
+	if err == nil {
+		return dirpath
+	}
+	a.sendLogMsg(LogErr, err.Error())
+	return ""
 }

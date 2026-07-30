@@ -22,6 +22,10 @@ export function NewADBClient(arg1:string,arg2:number):Promise<void>;
 
 export function Rename(arg1:string,arg2:string):Promise<void>;
 
-export function SelectDevice(arg1:number):Promise<void>;
+export function SelectADBExecutable():Promise<string>;
+
+export function SelectDevice(arg1:number,arg2:string):Promise<void>;
+
+export function SelectDownloadDir():Promise<string>;
 
 export function Upload(arg1:string,arg2:string):Promise<void>;

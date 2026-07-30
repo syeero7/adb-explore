@@ -42,8 +42,16 @@ export function Rename(arg1, arg2) {
   return window['go']['main']['App']['Rename'](arg1, arg2);
 }
 
-export function SelectDevice(arg1) {
-  return window['go']['main']['App']['SelectDevice'](arg1);
+export function SelectADBExecutable() {
+  return window['go']['main']['App']['SelectADBExecutable']();
+}
+
+export function SelectDevice(arg1, arg2) {
+  return window['go']['main']['App']['SelectDevice'](arg1, arg2);
+}
+
+export function SelectDownloadDir() {
+  return window['go']['main']['App']['SelectDownloadDir']();
 }
 
 export function Upload(arg1, arg2) {
