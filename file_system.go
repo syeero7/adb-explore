@@ -93,32 +93,29 @@ func (a *App) Download(downloadDir string, paths []string) {
 	}
 }
 
-// NOTE: local path should points to a file and remote path should points to a directory
-func (a *App) Upload(local, remote string) {
+// TODO: add support for dir upload
+func (a *App) Upload(remote string) {
 	remoteDir, err := cleanPath(remote)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
 
-	file, err := os.Open(local)
-	if err != nil {
-		a.sendLogMsg(LogErr, err.Error())
+	files := a.selectFilesToUpload()
+	if len(files) == 0 {
+		a.sendLogMsg(LogWarn, "no files selected to upload")
 		return
 	}
 
-	defer closeIO(file)
-	stat, err := file.Stat()
-	if err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
-	}
+	defer a.cache.invalidate(remoteDir)
+	for _, localPath := range files {
+		remotePath := path.Join(remote, path.Base(localPath))
 
-	if err := a.device.Push(file, remoteDir, stat.ModTime(), stat.Mode()); err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
+		if err := a.pushFile(localPath, remotePath); err != nil {
+			a.sendLogMsg(LogErr, err.Error())
+			return
+		}
 	}
-	a.cache.invalidate(remoteDir)
 }
 
 func (a *App) Delete(path string) {
@@ -328,7 +325,7 @@ func (a *App) pushFile(local, remote string) error {
 		return err
 	}
 
-	return a.device.Push(file, remote, stat.ModTime(), stat.Mode())
+	return a.device.Push(file, remote, stat.ModTime(), DefaultFileMode)
 }
 
 func (a *App) getDownloadDirPath(downloadDir string) string {

@@ -54,6 +54,6 @@ export function SelectDownloadDir() {
   return window['go']['main']['App']['SelectDownloadDir']();
 }
 
-export function Upload(arg1, arg2) {
-  return window['go']['main']['App']['Upload'](arg1, arg2);
+export function Upload(arg1) {
+  return window['go']['main']['App']['Upload'](arg1);
 }

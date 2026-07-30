@@ -158,3 +158,17 @@ func (a *App) SelectDownloadDir() string {
 	a.sendLogMsg(LogErr, err.Error())
 	return ""
 }
+
+func (a *App) selectFilesToUpload() []string {
+	opt := runtime.OpenDialogOptions{
+		Title:   "Select files to upload",
+		Filters: []runtime.FileFilter{{DisplayName: "any files", Pattern: "*"}},
+	}
+
+	paths, err := runtime.OpenMultipleFilesDialog(a.ctx, opt)
+	if err == nil {
+		return paths
+	}
+	a.sendLogMsg(LogErr, err.Error())
+	return []string{}
+}

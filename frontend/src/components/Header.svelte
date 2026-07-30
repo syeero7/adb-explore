@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { directory, isStorageDir, toParentDir, toStorageDir } from "@/lib/fs.svelte";
+  import { directory, isStorageDir, refresh, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
   import { tick } from "svelte";
 
@@ -16,7 +16,7 @@
 
   function refreshDir() {
     clearTimeout(timeout);
-    directory.refresh = directory.refresh < 1 ? 1 : directory.refresh + 1;
+    refresh();
   }
 
   function closeSearch() {

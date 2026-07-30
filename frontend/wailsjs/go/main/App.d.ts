@@ -28,4 +28,4 @@ export function SelectDevice(arg1:number,arg2:string):Promise<void>;
 
 export function SelectDownloadDir():Promise<string>;
 
-export function Upload(arg1:string,arg2:string):Promise<void>;
+export function Upload(arg1:string):Promise<void>;

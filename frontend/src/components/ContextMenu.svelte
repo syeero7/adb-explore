@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
   import type { MouseEventHandler } from "svelte/elements";
-  import { toDir, directory, isStorageDir, download } from "@/lib/fs.svelte";
+  import { toDir, directory, isStorageDir, download, upload } from "@/lib/fs.svelte";
   import { svg, CREATE_DIR, DELETE, DOWNLOAD, OPEN_DIR, RENAME, UPLOAD } from "@/lib/svg";
 
   let { selected }: { selected: string[] } = $props();
@@ -53,7 +53,7 @@
     {@render item("delete", DELETE, () => {}, isStorage)}
     {@render item("rename", RENAME, () => {}, isStorage)}
     <hr />
-    {@render item("upload", UPLOAD, () => {}, isStorage)}
+    {@render item("upload", UPLOAD, upload(directory.current), isStorage)}
     {@render item("create directory", CREATE_DIR, () => {}, isStorage)}
     <hr />
 

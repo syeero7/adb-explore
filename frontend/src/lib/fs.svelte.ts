@@ -1,4 +1,4 @@
-import { Download, List, SelectDownloadDir } from "@wails/go/main/App";
+import { Download, List, Upload } from "@wails/go/main/App";
 
 export type InfoTitle = "name" | "size" | "date modified";
 type SortBy = `${InfoTitle}:${"asc" | "desc"}`;
@@ -47,12 +47,23 @@ export function toDir(path: string) {
   directory.refresh = 0;
 }
 
+export function refresh() {
+  directory.refresh = directory.refresh < 1 ? 1 : directory.refresh + 1;
+}
+
 export function removePrefix(str: string, prefix: string) {
   return str.startsWith(prefix) ? str.slice(prefix.length) : str;
 }
 
 export function download(dir: "default" | "select", paths: string[]) {
   return async () => await Download(dir, paths);
+}
+
+export function upload(dir: string) {
+  return async () => {
+    await Upload(dir);
+    refresh();
+  };
 }
 
 export function sortBy(title: InfoTitle, sortBy: SortBy) {
