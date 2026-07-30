@@ -39,6 +39,10 @@ func (a *App) NewADBClient(adbPath string, port int) {
 	}
 
 	a.sendLogMsg(LogInfo, "adb server started successfully")
+	a.ConnectToServer(port)
+}
+
+func (a *App) ConnectToServer(port int) {
 	client, err := goadb.NewClientWith("localhost", port)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())

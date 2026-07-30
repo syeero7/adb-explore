@@ -6,6 +6,7 @@
     KillServer,
     DownloadADB,
     GetDeviceList,
+    ConnectToServer,
   } from "@wails/go/main/App";
   import { router } from "@/lib/router.svelte";
   import { svg, RELOAD } from "@/lib/svg";
@@ -18,6 +19,11 @@
   async function startADB(e: SubmitEvent) {
     e.preventDefault();
     await NewADBClient(adbPath, port);
+    await refreshDevices();
+  }
+
+  async function connect() {
+    await ConnectToServer(port);
     await refreshDevices();
   }
 
@@ -58,6 +64,7 @@
   <!-- TODO: try to auto detect adb executable path -->
   <!-- TODO: allow selecting adb execuable using wails select/open file dialog -->
 
+  <button type="button" onclick={connect}>Connect</button>
   <button type="submit">Start</button>
 </form>
 
