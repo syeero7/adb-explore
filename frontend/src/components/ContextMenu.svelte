@@ -1,13 +1,13 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
   import type { MouseEventHandler } from "svelte/elements";
-  import { toDir, directory, isStorageDir } from "@/lib/fs.svelte";
+  import { toDir, directory, isStorageDir, download } from "@/lib/fs.svelte";
   import { svg, CREATE_DIR, DELETE, DOWNLOAD, OPEN_DIR, RENAME, UPLOAD } from "@/lib/svg";
 
   let { selected }: { selected: string[] } = $props();
 
   let menu = $state({ height: 0, width: 0, isOpen: false });
-  let currentItem = $state({ path: "", isFile: false });
+  let currentItem = $state("");
   let positions = $state({
     cursor: { x: 0, y: 0 },
     window: { height: 0, width: 0 },
@@ -35,8 +35,7 @@
     if (win.height - cursor.y < menu.height) positions.cursor.y -= menu.height;
     if (win.width - cursor.x < menu.width) positions.cursor.x -= menu.width;
 
-    currentItem.path = row.querySelector<HTMLInputElement>("td > input")?.value || "";
-    currentItem.isFile = row.dataset.isFile === "true";
+    currentItem = row.querySelector<HTMLInputElement>("td > input")?.value || "";
     menu.isOpen = true;
   };
 </script>
@@ -45,11 +44,12 @@
 
 {#if menu.isOpen}
   <menu {@attach getContextMenuDimension}>
-    {const { path, isFile } = currentItem}
+    {const isFile = currentItem.startsWith("1|")}
     {const isStorage = isStorageDir(directory.current)}
 
-    {@render item("open", OPEN_DIR, () => toDir(path), isFile)}
-    {@render item("download", DOWNLOAD, () => {}, isStorage || !isFile)}
+    {@render item("open", OPEN_DIR, () => toDir(currentItem), isFile && !isStorage)}
+    {@render item("download", DOWNLOAD, download("default", [currentItem]), isStorage)}
+    {@render item("download to", DOWNLOAD, download("select", [currentItem]), isStorage)}
     {@render item("delete", DELETE, () => {}, isStorage)}
     {@render item("rename", RENAME, () => {}, isStorage)}
     <hr />
@@ -57,9 +57,10 @@
     {@render item("create directory", CREATE_DIR, () => {}, isStorage)}
     <hr />
 
-    {const hasItems = selected.length > 0}
-    {@render item("download selected", DOWNLOAD, () => {}, isStorage || hasItems)}
-    {@render item("delete selected", DELETE, () => {}, isStorage || hasItems)}
+    {const isDisabled = isStorage || selected.length === 0}
+    {@render item("download selected", DOWNLOAD, download("default", selected), isDisabled)}
+    {@render item("download selected to", DOWNLOAD, download("select", selected), isDisabled)}
+    {@render item("delete selected", DELETE, () => {}, isDisabled)}
   </menu>
 {/if}
 

@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -59,12 +60,14 @@ func (a *App) List(path, query, sortBy string, refresh int) DirEntries {
 	return a.sortFilterDir(&entries, query, sortBy)
 }
 
-// TODO: add support for push/pull directories
-// maybe compress and decompress directories
+// TODO: pull/push tar compressed multiple files/directories
 
-// NOTE: does not support pulling directories
 func (a *App) Download(downloadDir string, paths []string) {
-	var localPath string
+	dirpath := a.getDownloadDirPath(downloadDir)
+	if dirpath == "" {
+		return
+	}
+
 	for _, fpath := range paths {
 		isDir, entryPath := parseEntryId(fpath)
 		remotePath, err := cleanPath(entryPath)
@@ -73,10 +76,7 @@ func (a *App) Download(downloadDir string, paths []string) {
 			return
 		}
 
-		if localPath == "" {
-			localPath = filepath.Join(downloadDir, path.Base(path.Dir(remotePath)))
-		}
-
+		localPath := filepath.Join(dirpath, path.Base(remotePath))
 		if isDir {
 			if err := a.pullDir(remotePath, localPath); err != nil {
 				a.sendLogMsg(LogErr, err.Error())
@@ -307,6 +307,7 @@ func (a *App) pushDir(local, remote string) error {
 func (a *App) pullFile(remote, local string) error {
 	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, DefaultFileMode)
 	if err != nil {
+		log.Println("pull file | main", remote, local)
 		return err
 	}
 
@@ -327,6 +328,14 @@ func (a *App) pushFile(local, remote string) error {
 	}
 
 	return a.device.Push(file, remote, stat.ModTime(), stat.Mode())
+}
+
+func (a *App) getDownloadDirPath(downloadDir string) string {
+	if downloadDir == "select" {
+		return a.SelectDownloadDir()
+	}
+
+	return a.downloadDir
 }
 
 func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
