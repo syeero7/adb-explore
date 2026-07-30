@@ -30,6 +30,9 @@ type DirEntries struct {
 	Entries []Entry `json:"entries"`
 }
 
+const DefaultFileMode = 0644
+const DefaultDirMode = 0755
+
 func (a *App) List(path, query, sortBy string, refresh int) DirEntries {
 	dirpath, err := cleanPath(path)
 	if err != nil {
@@ -82,7 +85,7 @@ func (a *App) Download(downloadDir string, paths []string) {
 			continue
 		}
 
-		if err := a.pullFile(remotePath, localPath, os.ModeDir); err != nil {
+		if err := a.pullFile(remotePath, localPath); err != nil {
 			a.sendLogMsg(LogErr, err.Error())
 			return
 		}
@@ -224,7 +227,7 @@ func (a *App) sortFilterDir(dir *DirEntries, query, sortBy string) DirEntries {
 }
 
 func (a *App) pullDir(remote, local string) error {
-	if err := os.MkdirAll(local, os.ModePerm); err != nil {
+	if err := os.MkdirAll(local, DefaultDirMode); err != nil {
 		return err
 	}
 
@@ -248,7 +251,7 @@ func (a *App) pullDir(remote, local string) error {
 			continue
 		}
 
-		if err := a.pullFile(remotePath, localPath, entry.Mode); err != nil {
+		if err := a.pullFile(remotePath, localPath); err != nil {
 			return err
 		}
 	}
@@ -301,8 +304,8 @@ func (a *App) pushDir(local, remote string) error {
 	return nil
 }
 
-func (a *App) pullFile(remote, local string, mode os.FileMode) error {
-	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, mode)
+func (a *App) pullFile(remote, local string) error {
+	dest, err := os.OpenFile(local, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, DefaultFileMode)
 	if err != nil {
 		return err
 	}

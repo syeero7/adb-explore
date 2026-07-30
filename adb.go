@@ -87,7 +87,7 @@ func unzip(src, dest string) error {
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+		if err := os.MkdirAll(filepath.Dir(path), DefaultDirMode); err != nil {
 			return err
 		}
 
