@@ -12,12 +12,19 @@
     ConnectToServer,
     SelectDownloadDir,
     SelectADBExecutable,
+    GetDefaultSettings,
   } from "@wails/go/main/App";
+  import { onMount } from "svelte";
 
   let port = $state(5037);
-  let paths = $state({ downloadDir: "", adb: "/usr/bin/adb" });
+  let paths = $state({ downloadDir: "loading...", adb: "loading..." });
   let selectedDevice = $state<number | null>();
   let devices = $state<string[]>([]);
+
+  onMount(async () => {
+    const defaults = await GetDefaultSettings();
+    paths = defaults;
+  });
 
   async function startADB(e: SubmitEvent) {
     e.preventDefault();

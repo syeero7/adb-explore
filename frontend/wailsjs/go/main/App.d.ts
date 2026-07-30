@@ -10,6 +10,8 @@ export function Download(arg1:string,arg2:Array<string>):Promise<void>;
 
 export function DownloadADB():Promise<string>;
 
+export function GetDefaultSettings():Promise<main.DefaultSettings>;
+
 export function GetDeviceList():Promise<Array<string>>;
 
 export function KillServer(arg1:string,arg2:number):Promise<void>;

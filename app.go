@@ -17,7 +17,12 @@ type App struct {
 	client      goadb.Client
 	device      goadb.Device
 	ignoreDirs  map[string]struct{}
-	downloadDir string
+	settings    DefaultSettings
+}
+
+type DefaultSettings struct {
+	DownloadDir string `json:"downloadDir"`
+	ADBPath     string `json:"adb"`
 }
 
 func NewApp() *App {
@@ -91,7 +96,7 @@ func (a *App) SelectDevice(idx int, downloadDir string) {
 
 	a.device = devices[idx]
 	a.cache = *newDirCache(5)
-	a.downloadDir = downloadDir
+	a.settings.DownloadDir = downloadDir
 	a.setIgnoreDirs()
 }
 
@@ -125,6 +130,23 @@ func (a *App) DownloadADB() string {
 	return adbPath
 }
 
+func (a *App) GetDefaultSettings() DefaultSettings {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return DefaultSettings{}
+	}
+
+	adbPath, err := getADBPath()
+	if err != nil {
+		a.sendLogMsg(LogErr, err.Error())
+		return DefaultSettings{}
+	}
+
+	a.settings = DefaultSettings{ADBPath: adbPath, DownloadDir: filepath.Join(home, "Downloads")}
+	return a.settings
+}
+
 func (a *App) KillServer(adbPath string, port int) {
 	if err := killADBServer(adbPath, port); err != nil {
 		log.Fatal(err)
@@ -148,6 +170,7 @@ func (a *App) SelectADBExecutable() string {
 func (a *App) SelectDownloadDir() string {
 	opt := runtime.OpenDialogOptions{
 		Title:                "Select a directory to save download files",
+		DefaultDirectory:     a.settings.DownloadDir,
 		CanCreateDirectories: true,
 	}
 

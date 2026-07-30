@@ -18,6 +18,10 @@ export function DownloadADB() {
   return window['go']['main']['App']['DownloadADB']();
 }
 
+export function GetDefaultSettings() {
+  return window['go']['main']['App']['GetDefaultSettings']();
+}
+
 export function GetDeviceList() {
   return window['go']['main']['App']['GetDeviceList']();
 }

@@ -333,7 +333,7 @@ func (a *App) getDownloadDirPath(downloadDir string) string {
 		return a.SelectDownloadDir()
 	}
 
-	return a.downloadDir
+	return a.settings.DownloadDir
 }
 
 func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {

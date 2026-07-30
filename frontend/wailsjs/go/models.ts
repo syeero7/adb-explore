@@ -1,5 +1,19 @@
 export namespace main {
 	
+	export class DefaultSettings {
+	    downloadDir: string;
+	    adb: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DefaultSettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.downloadDir = source["downloadDir"];
+	        this.adb = source["adb"];
+	    }
+	}
 	export class Entry {
 	    id: string;
 	    isDir: boolean;
