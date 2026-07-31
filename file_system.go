@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"cmp"
 	"errors"
 	"io/fs"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 )
 
 type Entry struct {
@@ -155,6 +157,11 @@ func (a *App) Delete(paths []string) {
 }
 
 func (a *App) Rename(dir, oldName, newName string) {
+	if a.isEntryExist(dir, newName) || !isValidName(newName) {
+		a.sendLogMsg(LogWarn, "name already exists or invalid name")
+		return
+	}
+
 	oldPath, err := cleanPath(path.Join(dir, oldName))
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
@@ -173,7 +180,7 @@ func (a *App) Rename(dir, oldName, newName string) {
 	}
 
 	defer a.cache.invalidateRec(dir)
-	if _, err := a.device.RunShellCommand("mv", oldPath, newPath); err != nil {
+	if _, err := a.device.RunShellCommand("mv", strconv.Quote(oldPath), strconv.Quote(newPath)); err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
@@ -356,6 +363,41 @@ func (a *App) getDownloadDirPath(downloadDir string) string {
 	}
 
 	return a.settings.DownloadDir
+}
+
+func (a *App) isEntryExist(dir, name string) bool {
+	if entris, ok := a.cache.get(dir); ok {
+		for _, entry := range entris.Entries {
+			if entry.Name == name {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func isValidName(name string) bool {
+	if l := len(name); l == 0 || l > 255 {
+		return false
+	}
+
+	if name == ".." || name == "." || filepath.Base(name) != name {
+		return false
+	}
+
+	invalid := []byte{'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
+	for _, c := range name {
+		if unicode.IsControl(c) {
+			return false
+		}
+
+		if bytes.ContainsRune(invalid, c) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func filterEntries(dir *DirEntries, query string) (*DirEntries, []Entry) {
