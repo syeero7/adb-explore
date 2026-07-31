@@ -135,18 +135,23 @@ func (a *App) Upload(kind, remote string) {
 
 }
 
-func (a *App) Delete(path string) {
-	remote, err := cleanPath(path)
-	if err != nil {
-		a.sendLogMsg(LogErr, err.Error())
-		return
+func (a *App) Delete(paths []string) {
+	var toDelete []string
+	for _, fpath := range paths {
+		_, entryPath := parseEntryId(fpath)
+		remotePath, err := cleanPath(entryPath)
+		if err != nil {
+			a.sendLogMsg(LogErr, err.Error())
+			return
+		}
+
+		toDelete = append(toDelete, strconv.Quote(remotePath))
 	}
 
-	if _, err := a.device.RunShellCommand("rm -rf", remote); err != nil {
+	if _, err := a.device.RunShellCommand("rm -rf", strings.Join(toDelete, " ")); err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
-	a.cache.invalidateRec(remote)
 }
 
 func (a *App) Rename(old, new string) {

@@ -4,7 +4,7 @@ import {main} from '../models';
 
 export function ConnectToServer(arg1:number):Promise<void>;
 
-export function Delete(arg1:string):Promise<void>;
+export function Delete(arg1:Array<string>):Promise<void>;
 
 export function Download(arg1:string,arg2:Array<string>):Promise<void>;
 

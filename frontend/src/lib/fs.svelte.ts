@@ -1,4 +1,4 @@
-import { Download, List, Upload } from "@wails/go/main/App";
+import { Delete, Download, List, Upload } from "@wails/go/main/App";
 
 export type InfoTitle = "name" | "size" | "date modified";
 type SortBy = `${InfoTitle}:${"asc" | "desc"}`;
@@ -62,6 +62,13 @@ export function download(dir: "default" | "select", paths: string[]) {
 export function upload(kind: "dir" | "files", dir: string) {
   return async () => {
     await Upload(kind, dir);
+    refresh();
+  };
+}
+
+export function deleteEntry(paths: string[]) {
+  return async () => {
+    await Delete(paths);
     refresh();
   };
 }

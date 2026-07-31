@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Attachment } from "svelte/attachments";
   import type { MouseEventHandler } from "svelte/elements";
-  import { toDir, directory, isStorageDir, download, upload } from "@/lib/fs.svelte";
+  import { toDir, directory, isStorageDir, download, upload, deleteEntry } from "@/lib/fs.svelte";
   import { svg, CREATE_DIR, DELETE, DOWNLOAD, OPEN_DIR, RENAME, UPLOAD } from "@/lib/svg";
 
   let { selected }: { selected: string[] } = $props();
@@ -50,7 +50,7 @@
     {@render item("open", OPEN_DIR, () => toDir(currentItem), isFile && !isStorage)}
     {@render item("download", DOWNLOAD, download("default", [currentItem]), isStorage)}
     {@render item("download to", DOWNLOAD, download("select", [currentItem]), isStorage)}
-    {@render item("delete", DELETE, () => {}, isStorage)}
+    {@render item("delete", DELETE, deleteEntry([currentItem]), isStorage)}
     {@render item("rename", RENAME, () => {}, isStorage)}
     <hr />
     {@render item("upload files", UPLOAD, upload("files", directory.current), isStorage)}
@@ -61,7 +61,7 @@
     {const isDisabled = isStorage || selected.length === 0}
     {@render item("download selected", DOWNLOAD, download("default", selected), isDisabled)}
     {@render item("download selected to", DOWNLOAD, download("select", selected), isDisabled)}
-    {@render item("delete selected", DELETE, () => {}, isDisabled)}
+    {@render item("delete selected", DELETE, deleteEntry(selected), isDisabled)}
   </menu>
 {/if}
 
