@@ -109,7 +109,7 @@ func (a *App) Upload(kind, remote string) {
 			return
 		}
 
-		remotePath := path.Join(remoteDir, path.Base(localPath))
+		remotePath := path.Join(remoteDir, filepath.Base(localPath))
 		if err := a.pushDir(localPath, remotePath); err != nil {
 			a.sendLogMsg(LogErr, err.Error())
 			return
@@ -123,7 +123,7 @@ func (a *App) Upload(kind, remote string) {
 		}
 
 		for _, localPath := range files {
-			remotePath := path.Join(remoteDir, path.Base(localPath))
+			remotePath := path.Join(remoteDir, filepath.Base(localPath))
 			if err := a.pushFile(localPath, remotePath); err != nil {
 				a.sendLogMsg(LogErr, err.Error())
 				return
@@ -292,7 +292,7 @@ func (a *App) pushDir(local, remote string) error {
 			return err
 		}
 
-		remotePath := filepath.ToSlash(filepath.Join(remote, relPath))
+		remotePath := path.Join(remote, filepath.ToSlash(relPath))
 		if entry.IsDir() {
 			dirsToMake = append(dirsToMake, strconv.Quote(remotePath))
 		} else {
