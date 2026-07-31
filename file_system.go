@@ -154,29 +154,29 @@ func (a *App) Delete(paths []string) {
 	}
 }
 
-func (a *App) Rename(old, new string) {
-	oldPath, err := cleanPath(old)
+func (a *App) Rename(dir, oldName, newName string) {
+	oldPath, err := cleanPath(path.Join(dir, oldName))
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
 
-	newPath, err := cleanPath(new)
+	newPath, err := cleanPath(path.Join(dir, newName))
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
 
-	if oldp := path.Dir(oldPath); oldp != path.Dir(newPath) || !strings.HasPrefix(oldp, a.currentPath) {
+	if dir != path.Dir(oldPath) || dir != path.Dir(newPath) {
 		a.sendLogMsg(LogErr, "cannot move")
 		return
 	}
 
+	defer a.cache.invalidateRec(dir)
 	if _, err := a.device.RunShellCommand("mv", oldPath, newPath); err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
-	a.cache.invalidateRec(a.currentPath)
 }
 
 func (a *App) MakeDir(dirname string) {

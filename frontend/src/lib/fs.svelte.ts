@@ -1,4 +1,4 @@
-import { Delete, Download, List, Upload } from "@wails/go/main/App";
+import { Delete, Download, List, Rename, Upload } from "@wails/go/main/App";
 
 export type InfoTitle = "name" | "size" | "date modified";
 type SortBy = `${InfoTitle}:${"asc" | "desc"}`;
@@ -73,6 +73,11 @@ export function deleteEntry(paths: string[]) {
   };
 }
 
+export async function rename(dir: string, oldName: string, newName: string) {
+  await Rename(dir, oldName, newName);
+  refresh();
+}
+
 export function sortBy(title: InfoTitle, sortBy: SortBy) {
   const isActive = sortBy.startsWith(title);
   const isAsc = sortBy.endsWith("asc");
@@ -86,4 +91,11 @@ export function sortBy(title: InfoTitle, sortBy: SortBy) {
   };
 
   return { isActive, isAsc, handler };
+}
+
+export function basename(path: string) {
+  path = path.endsWith("/") ? path.slice(0, -1) : path;
+  const idx = path.lastIndexOf("/");
+  if (idx > 0) path = path.slice(idx + 1);
+  return path;
 }
