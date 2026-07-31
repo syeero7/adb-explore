@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MouseEventHandler } from "svelte/elements";
+  import { onMount } from "svelte";
   import Logs from "./Logs.svelte";
   import { router } from "@/lib/router.svelte";
   import { svg, RELOAD, TARGET } from "@/lib/svg";
@@ -14,7 +15,6 @@
     SelectADBExecutable,
     GetDefaultSettings,
   } from "@wails/go/main/App";
-  import { onMount } from "svelte";
 
   let port = $state(5037);
   let paths = $state({ downloadDir: "loading...", adb: "loading..." });
@@ -22,8 +22,7 @@
   let devices = $state<string[]>([]);
 
   onMount(async () => {
-    const defaults = await GetDefaultSettings();
-    paths = defaults;
+    paths = await GetDefaultSettings();
   });
 
   async function startADB(e: SubmitEvent) {
@@ -77,14 +76,13 @@
 
   {@render pathInput(paths, "adb", "ADB executable path", selectADBExecutable)}
 
-  <!-- TODO: try to auto detect adb executable path -->
-  <!-- TODO: allow selecting adb execuable using wails select/open file dialog -->
-
   <button type="button" onclick={connect}>Connect</button>
   <button type="submit">Start</button>
 </form>
 
 <form onsubmit={selectDevice}>
+  {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
+
   <label>
     <span>Device</span>
     <select required bind:value={selectedDevice}>
@@ -101,8 +99,6 @@
   <button type="button" title="refresh" onclick={refreshDevices}>
     {@render svg({ d: RELOAD })}
   </button>
-
-  {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
 
   <button type="submit" disabled={typeof selectedDevice !== "number"}>Select</button>
 </form>
