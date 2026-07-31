@@ -59,9 +59,9 @@ export function download(dir: "default" | "select", paths: string[]) {
   return async () => await Download(dir, paths);
 }
 
-export function upload(dir: string) {
+export function upload(kind: "dir" | "files", dir: string) {
   return async () => {
-    await Upload(dir);
+    await Upload(kind, dir);
     refresh();
   };
 }

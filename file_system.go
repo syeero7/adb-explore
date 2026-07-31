@@ -93,29 +93,46 @@ func (a *App) Download(downloadDir string, paths []string) {
 	}
 }
 
-// TODO: add support for dir upload
-func (a *App) Upload(remote string) {
+func (a *App) Upload(kind, remote string) {
 	remoteDir, err := cleanPath(remote)
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
 
-	files := a.selectFilesToUpload()
-	if len(files) == 0 {
-		a.sendLogMsg(LogWarn, "no files selected to upload")
-		return
-	}
+	switch kind {
 
-	defer a.cache.invalidate(remoteDir)
-	for _, localPath := range files {
-		remotePath := path.Join(remote, path.Base(localPath))
+	case "dir":
+		localPath := a.selectDirToUpload()
+		if localPath == "" {
+			a.sendLogMsg(LogWarn, "no directory is selected to upload")
+			return
+		}
 
-		if err := a.pushFile(localPath, remotePath); err != nil {
+		remotePath := path.Join(remoteDir, path.Base(localPath))
+		if err := a.pushDir(localPath, remotePath); err != nil {
 			a.sendLogMsg(LogErr, err.Error())
 			return
 		}
+
+	case "files":
+		files := a.selectFilesToUpload()
+		if len(files) == 0 {
+			a.sendLogMsg(LogWarn, "no files selected to upload")
+			return
+		}
+
+		for _, localPath := range files {
+			remotePath := path.Join(remoteDir, path.Base(localPath))
+			if err := a.pushFile(localPath, remotePath); err != nil {
+				a.sendLogMsg(LogErr, err.Error())
+				return
+			}
+		}
+	default:
+		panic("unkown kind: " + kind)
 	}
+
 }
 
 func (a *App) Delete(path string) {

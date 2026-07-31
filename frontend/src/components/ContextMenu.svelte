@@ -53,7 +53,8 @@
     {@render item("delete", DELETE, () => {}, isStorage)}
     {@render item("rename", RENAME, () => {}, isStorage)}
     <hr />
-    {@render item("upload", UPLOAD, upload(directory.current), isStorage)}
+    {@render item("upload files", UPLOAD, upload("files", directory.current), isStorage)}
+    {@render item("upload directory", UPLOAD, upload("dir", directory.current), isStorage)}
     {@render item("create directory", CREATE_DIR, () => {}, isStorage)}
     <hr />
 

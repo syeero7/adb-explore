@@ -195,3 +195,16 @@ func (a *App) selectFilesToUpload() []string {
 	a.sendLogMsg(LogErr, err.Error())
 	return []string{}
 }
+
+func (a *App) selectDirToUpload() string {
+	opt := runtime.OpenDialogOptions{
+		Title: "Select a directory to upload",
+	}
+
+	dirpath, err := runtime.OpenDirectoryDialog(a.ctx, opt)
+	if err == nil {
+		return dirpath
+	}
+	a.sendLogMsg(LogErr, err.Error())
+	return ""
+}
