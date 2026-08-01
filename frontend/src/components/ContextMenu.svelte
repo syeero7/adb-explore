@@ -12,6 +12,7 @@
     deleteEntry,
     basename,
     rename,
+    makeDir,
   } from "@/lib/fs.svelte";
 
   let { selected }: { selected: string[] } = $props();
@@ -64,8 +65,21 @@
     dialog.onSubmit = async (e: SubmitEvent) => {
       e.preventDefault();
       const newName = dialog.value.trim();
-      if (newName == dialog.oldValue) return;
+      if (!newName || newName == dialog.oldValue) return;
       await rename(directory.current, oldName, newName);
+      dialog.isOpen = false;
+    };
+  };
+
+  const createDirDialog = () => {
+    dialog.title = "Create Directory";
+    dialog.value = "";
+    dialog.isOpen = true;
+    dialog.onSubmit = async (e: SubmitEvent) => {
+      e.preventDefault();
+      const dirname = dialog.value.trim();
+      if (!dirname) return;
+      await makeDir(directory.current, dirname);
       dialog.isOpen = false;
     };
   };
@@ -87,7 +101,7 @@
     <hr />
     {@render item("upload files", UPLOAD, upload("files", directory.current), isStorage)}
     {@render item("upload directory", UPLOAD, upload("dir", directory.current), isStorage)}
-    {@render item("create directory", CREATE_DIR, () => {}, isStorage)}
+    {@render item("create directory", CREATE_DIR, createDirDialog, isStorage)}
     <hr />
 
     {const isDisabled = isStorage || selected.length === 0}

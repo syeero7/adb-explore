@@ -186,23 +186,28 @@ func (a *App) Rename(dir, oldName, newName string) {
 	}
 }
 
-func (a *App) MakeDir(dirname string) {
-	dirPath, err := cleanPath(path.Join(a.currentPath, dirname))
+func (a *App) MakeDir(dir, dirname string) {
+	if a.isEntryExist(dir, dirname) || !isValidName(dirname) {
+		a.sendLogMsg(LogWarn, "directory name is already exists or its invalid")
+		return
+	}
+
+	dirPath, err := cleanPath(path.Join(dir, dirname))
 	if err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
 
-	if !strings.HasPrefix(dirPath, a.currentPath) {
+	if !strings.HasPrefix(dirPath, dir) {
 		a.sendLogMsg(LogErr, "not in current dir")
 		return
 	}
 
-	if _, err := a.device.RunShellCommand("mkdir", dirPath); err != nil {
+	defer a.cache.invalidate(dir)
+	if _, err := a.device.RunShellCommand("mkdir", strconv.Quote(dirPath)); err != nil {
 		a.sendLogMsg(LogErr, err.Error())
 		return
 	}
-	a.cache.invalidate(a.currentPath)
 }
 
 func (a *App) setIgnoreDirs() {

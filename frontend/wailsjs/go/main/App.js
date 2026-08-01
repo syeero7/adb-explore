@@ -34,8 +34,8 @@ export function List(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['List'](arg1, arg2, arg3, arg4);
 }
 
-export function MakeDir(arg1) {
-  return window['go']['main']['App']['MakeDir'](arg1);
+export function MakeDir(arg1, arg2) {
+  return window['go']['main']['App']['MakeDir'](arg1, arg2);
 }
 
 export function NewADBClient(arg1, arg2) {

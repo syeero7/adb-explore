@@ -1,4 +1,4 @@
-import { Delete, Download, List, Rename, Upload } from "@wails/go/main/App";
+import { Delete, Download, List, MakeDir, Rename, Upload } from "@wails/go/main/App";
 
 export type InfoTitle = "name" | "size" | "date modified";
 type SortBy = `${InfoTitle}:${"asc" | "desc"}`;
@@ -75,6 +75,11 @@ export function deleteEntry(paths: string[]) {
 
 export async function rename(dir: string, oldName: string, newName: string) {
   await Rename(dir, oldName, newName);
+  refresh();
+}
+
+export async function makeDir(dir: string, name: string) {
+  await MakeDir(dir, name);
   refresh();
 }
 
