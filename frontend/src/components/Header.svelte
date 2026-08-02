@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { tick } from "svelte";
+  import Logs from "./Logs.svelte";
   import { directory, isStorageDir, refresh, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
-  import { tick } from "svelte";
 
   let isSearching = $state(false);
   let timeout: number | undefined;
@@ -68,6 +69,8 @@
       {@render svg({ d: SEARCH })}
     </button>
   {/if}
+
+  <Logs />
 </header>
 
 <style>
