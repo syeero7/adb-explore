@@ -25,14 +25,30 @@
     paths = await GetDefaultSettings();
   });
 
-  const startADB = async (e: SubmitEvent) => {
+  const onADBSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-    await NewADBClient(paths.adb, port);
-    await refreshDevices();
-  };
+    if (paths.adb.startsWith("loading")) return;
 
-  const connect = async () => {
-    await ConnectToServer(port);
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    switch (formData.get("action")) {
+      case "kill": {
+        await KillServer(paths.adb, port);
+        devices = [];
+        selectedDevice = null;
+        return;
+      }
+      case "start": {
+        await NewADBClient(paths.adb, port);
+        break;
+      }
+      case "connect": {
+        await ConnectToServer(port);
+        break;
+      }
+      default:
+        throw new Error("unkown action");
+    }
+
     await refreshDevices();
   };
 
@@ -41,12 +57,6 @@
     if (selectedDevice == null) return;
     await SelectDevice(selectedDevice, paths.downloadDir);
     router.current = "explore";
-  };
-
-  const killServer = async () => {
-    await KillServer(paths.adb, port);
-    devices = [];
-    selectedDevice = null;
   };
 
   const downloadADB = async () => {
@@ -68,7 +78,7 @@
   };
 </script>
 
-<form onsubmit={startADB}>
+<form onsubmit={onADBSubmit}>
   <label>
     <span>Port</span>
     <input required bind:value={port} type="number" />
@@ -76,41 +86,45 @@
 
   {@render pathInput(paths, "adb", "ADB executable path", selectADBExecutable)}
 
-  <button type="button" onclick={connect}>Connect</button>
-  <button type="submit">Start</button>
+  <div>
+    <button name="action" value="connect" type="submit">Connect</button>
+    <button name="action" value="start" type="submit">Start server</button>
+    <button name="action" value="kill" type="submit">Kill server</button>
+  </div>
 </form>
 
 <form onsubmit={selectDevice}>
   {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
 
-  <label>
-    <span>Device</span>
-    <select required bind:value={selectedDevice}>
-      {#if devices == null || devices.length === 0}
-        <option>No device</option>
-      {/if}
+  <div>
+    <label>
+      <span>Device</span>
+      <select required bind:value={selectedDevice}>
+        {#if devices == null || devices.length === 0}
+          <option>No device</option>
+        {/if}
 
-      {#each devices as device, i}
-        <option value={i}>{device}</option>
-      {/each}
-    </select>
-  </label>
+        {#each devices as device, i}
+          <option value={i}>{device}</option>
+        {/each}
+      </select>
+    </label>
 
-  <button type="button" title="refresh" onclick={refreshDevices}>
-    {@render svg({ d: RELOAD })}
-  </button>
+    <button type="button" title="refresh" onclick={refreshDevices}>
+      {@render svg({ d: RELOAD })}
+    </button>
+  </div>
 
   <button type="submit" disabled={typeof selectedDevice !== "number"}>Select</button>
 </form>
 
-<div>
+<section>
   <!-- TODO: download progress bar -->
   <!-- NOTE: use resp.ContentLength with io.TeeReader -->
   <!-- TODO: check server is running on given port or any onsubmit errors -->
-  <button type="button" onclick={downloadADB}>Download ADB</button>
-  <button type="button" onclick={killServer}>Kill ADB server</button>
+  <button onclick={downloadADB}>Download ADB</button>
   <Logs />
-</div>
+</section>
 
 {#snippet pathInput(
   values: typeof paths,
