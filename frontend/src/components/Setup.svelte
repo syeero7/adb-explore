@@ -52,7 +52,7 @@
     await refreshDevices();
   };
 
-  const selectDevice = async (e: SubmitEvent) => {
+  const onSelectDevice = async (e: SubmitEvent) => {
     e.preventDefault();
     if (selectedDevice == null) return;
     await SelectDevice(selectedDevice, paths.downloadDir);
@@ -93,7 +93,7 @@
   </div>
 </form>
 
-<form onsubmit={selectDevice}>
+<form onsubmit={onSelectDevice}>
   {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
 
   <div>
@@ -115,7 +115,7 @@
     </button>
   </div>
 
-  <button type="submit" disabled={typeof selectedDevice !== "number"}>Select</button>
+  <button type="submit" disabled={typeof selectedDevice !== "number"}>Explore</button>
 </form>
 
 <section>
