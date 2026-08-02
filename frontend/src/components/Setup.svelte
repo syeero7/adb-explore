@@ -27,10 +27,9 @@
 
   const onADBSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-    if (paths.adb.startsWith("loading")) return;
+    if (paths.adb.startsWith("loading") || !(e.submitter instanceof HTMLButtonElement)) return;
 
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
-    switch (formData.get("action")) {
+    switch (e.submitter.value) {
       case "kill": {
         await KillServer(paths.adb, port);
         devices = [];
