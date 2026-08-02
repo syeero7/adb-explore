@@ -5,15 +5,15 @@
   let dialog: HTMLDialogElement | undefined;
   const logs = useLogs();
 
-  function closeDialog() {
+  const closeDialog = () => {
     if (!dialog) return;
     dialog.close();
-  }
+  };
 
-  function openDialog() {
+  const openDialog = () => {
     if (!dialog) return;
     dialog.showModal();
-  }
+  };
 </script>
 
 <button title="view logs" onclick={openDialog}>

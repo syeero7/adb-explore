@@ -13,12 +13,11 @@
 
   let { dialog = $bindable() }: InputDialogProps = $props();
 
-  function closeDialog() {
+  const closeDialog = () => {
     dialog.isOpen = false;
-  }
+  };
 </script>
 
-{dialog.isOpen}
 <dialog open={dialog.isOpen}>
   <div>
     <header>

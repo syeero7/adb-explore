@@ -8,30 +8,30 @@
   // svelte-ignore <non_reactive_update>
   let input: HTMLInputElement | undefined;
 
-  async function openSearch() {
+  const openSearch = async () => {
     isSearching = true;
     await tick();
     input?.focus();
-  }
+  };
 
-  function refreshDir() {
+  const refreshDir = () => {
     clearTimeout(timeout);
     refresh();
-  }
+  };
 
-  function closeSearch() {
+  const closeSearch = () => {
     clearTimeout(timeout);
     isSearching = false;
     directory.query = "";
-  }
+  };
 
-  function search(e: Event) {
+  const search = (e: Event) => {
     clearTimeout(timeout);
     const query = (e.target as HTMLInputElement).value.trim();
     timeout = setTimeout(() => {
       directory.query = query;
     }, 300);
-  }
+  };
 </script>
 
 <header>

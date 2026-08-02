@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { main } from "@wails/go/models";
   import Header from "./Header.svelte";
+  import ContextMenu from "./ContextMenu.svelte";
   import {
     type InfoTitle,
     getEntries,
@@ -18,6 +19,7 @@
 </script>
 
 <Header />
+<ContextMenu {selected} />
 
 {#await getEntries(directory)}
   <p>Loading...</p>

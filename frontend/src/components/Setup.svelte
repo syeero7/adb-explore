@@ -25,47 +25,47 @@
     paths = await GetDefaultSettings();
   });
 
-  async function startADB(e: SubmitEvent) {
+  const startADB = async (e: SubmitEvent) => {
     e.preventDefault();
     await NewADBClient(paths.adb, port);
     await refreshDevices();
-  }
+  };
 
-  async function connect() {
+  const connect = async () => {
     await ConnectToServer(port);
     await refreshDevices();
-  }
+  };
 
-  async function selectDevice(e: SubmitEvent) {
+  const selectDevice = async (e: SubmitEvent) => {
     e.preventDefault();
     if (selectedDevice == null) return;
     await SelectDevice(selectedDevice, paths.downloadDir);
     router.current = "explore";
-  }
+  };
 
-  async function killServer() {
+  const killServer = async () => {
     await KillServer(paths.adb, port);
     devices = [];
     selectedDevice = null;
-  }
+  };
 
-  async function downloadADB() {
+  const downloadADB = async () => {
     paths.adb = await DownloadADB();
-  }
+  };
 
-  async function refreshDevices() {
+  const refreshDevices = async () => {
     devices = await GetDeviceList();
     if (devices == null || devices.length === 0) return;
     selectedDevice = 0;
-  }
+  };
 
-  async function selectADBExecutable() {
+  const selectADBExecutable = async () => {
     paths.adb = await SelectADBExecutable();
-  }
+  };
 
-  async function selectDownloadDir() {
+  const selectDownloadDir = async () => {
     paths.downloadDir = await SelectDownloadDir();
-  }
+  };
 </script>
 
 <form onsubmit={startADB}>
