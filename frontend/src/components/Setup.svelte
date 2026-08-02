@@ -81,7 +81,7 @@
 <form onsubmit={onADBSubmit}>
   <label>
     <span>Port</span>
-    <input required bind:value={port} type="number" />
+    <input required bind:value={port} type="number" min={1024} max={65535} />
   </label>
 
   {@render pathInput(paths, "adb", "ADB executable path", selectADBExecutable)}
