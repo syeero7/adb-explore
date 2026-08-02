@@ -126,7 +126,7 @@
     <button
       {onclick}
       type="button"
-      title={`select ${key === "adb" ? "adb executable" : "download directpry"}`}>
+      title={`select ${key === "adb" ? "adb executable" : "download directory"}`}>
       {@render svg({ d: TARGET })}
     </button>
   </div>
