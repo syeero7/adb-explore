@@ -16,4 +16,9 @@
 </main>
 
 <style>
+  main {
+    padding: 0.5em;
+    max-width: fit-content;
+    margin-inline: auto;
+  }
 </style>

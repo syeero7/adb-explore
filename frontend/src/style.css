@@ -1,0 +1,102 @@
+@layer util;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --radius: 6px;
+  --shadow: 0 0 4px var(--accent);
+
+  --foreground: light-dark(#121212, #fff);
+
+  --background: light-dark(#fff, #121212);
+  --background-a10: light-dark(#f2f2f2, #252525);
+  --background-a20: light-dark(#e4e4e4, #393939);
+  --background-a30: light-dark(#d7d7d7, #4f4f4f);
+
+  --primary: light-dark(#6686f8, #91b0ff);
+  --primary-a10: light-dark(#5874d8, #9cb8ff);
+  --primary-a20: light-dark(#4a62b8, #a6c0ff);
+  --primary-a30: light-dark(#3c519a, #b1c8ff);
+
+  --accent: #cf91ff;
+  --accent-a10: light-dark(#b47dde, #d49dff);
+  --accent-a20: light-dark(#996abe, #d9a8ff);
+  --accent-a30: light-dark(#7f589e, #ddb3ff);
+
+  --success: light-dark(#00a23d, #4acc66);
+  --success-a10: light-dark(#48b15c, #77d786);
+  --success-a20: light-dark(#6ebf7a, #9de2a5);
+
+  --warning: light-dark(#c08010, #e8a546);
+  --warning-a10: light-dark(#ca9346, #eeb871);
+  --warning-a20: light-dark(#d4a66a, #f3ca97);
+
+  --danger: light-dark(#df6465, #ff8f8d);
+  --danger-a10: light-dark(#e77d7b, #ffa6a3);
+  --danger-a20: light-dark(#ed9492, #ffbdba);
+
+  --info: light-dark(#4b95c0, #71bbe7);
+  --info-a10: light-dark(#68a5ca, #8fc9ec);
+  --info-a20: light-dark(#83b5d4, #acd7f1);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+select,
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+body {
+  min-height: 100vh;
+  font-family: system-ui, "Segoe UI", Roboto, "Open Sans", "Helvetica Neue", sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  align-content: center;
+}
+
+html {
+  color-scheme: dark light;
+}
+
+*:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@layer util {
+  button {
+    --btn-bg: var(--background);
+    --btn-fg: var(--foreground);
+    --btn-border: transparent;
+
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    border: 1px solid var(--btn-border);
+    transition-property: color, border-color;
+    transition-duration: 300ms;
+
+    svg {
+      fill: var(--btn-fg);
+      pointer-events: none;
+      transition-property: fill;
+      transition-duration: 300ms;
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      --btn-border: var(--accent);
+      --btn-fg: var(--accent);
+    }
+  }
+}

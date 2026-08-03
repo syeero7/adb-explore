@@ -85,17 +85,17 @@
 
   {@render pathInput(paths, "adb", "ADB executable path", selectADBExecutable)}
 
-  <div>
+  <div class="adb-actions">
     <button name="action" value="connect" type="submit">Connect</button>
-    <button name="action" value="start" type="submit">Start server</button>
-    <button name="action" value="kill" type="submit">Kill server</button>
+    <button name="action" value="start" type="submit">Start Server</button>
+    <button name="action" value="kill" type="submit">Kill Server</button>
   </div>
 </form>
 
 <form onsubmit={onSelectDevice}>
   {@render pathInput(paths, "downloadDir", "Download directory path", selectDownloadDir)}
 
-  <div>
+  <div class="field-w-btn">
     <label>
       <span>Device</span>
       <select required bind:value={selectedDevice}>
@@ -114,7 +114,7 @@
     </button>
   </div>
 
-  <button type="submit" disabled={typeof selectedDevice !== "number"}>Explore</button>
+  <button class="exp" type="submit" disabled={typeof selectedDevice !== "number"}>Explore</button>
 </form>
 
 <section>
@@ -131,11 +131,12 @@
   label: string,
   onclick: MouseEventHandler<HTMLButtonElement>,
 )}
-  <div>
+  <div class="field-w-btn">
     <label>
       <span>{label}</span>
       <input required type="text" bind:value={values[key]} />
     </label>
+    <!-- FIXME: use default path on dialog cancle -->
     <button
       {onclick}
       type="button"
@@ -146,4 +147,106 @@
 {/snippet}
 
 <style>
+  :root {
+    --btn-size: 2em;
+    --flex-gap: 0.6em;
+    --field-width: calc(100% - var(--btn-size) - var(--flex-gap));
+  }
+
+  form {
+    display: grid;
+    gap: 0.6em;
+    padding-block: 1em;
+  }
+
+  label {
+    display: grid;
+    min-width: var(--field-width);
+    gap: 0.25em;
+
+    span {
+      font-weight: 500;
+      font-size: 0.9em;
+      text-transform: capitalize;
+    }
+
+    input,
+    select {
+      padding: 0.35em 0.5em;
+      background: var(--background-a10);
+      border: 1px solid var(--background-a20);
+      border-radius: var(--radius);
+      min-height: 1.5em;
+    }
+
+    input {
+      min-width: 26em;
+      max-width: var(--field-width);
+    }
+
+    select {
+      min-height: 2.25em;
+      appearance: none;
+    }
+
+    &:has(select) {
+      display: -ms-inline-grid;
+      position: relative;
+
+      ::after {
+        content: "\25BC";
+        position: absolute;
+        top: calc(50% + 0.4em);
+        right: 0.75em;
+        font-size: 0.75em;
+        color: var(--foreground);
+        pointer-events: none;
+      }
+    }
+  }
+
+  button[type="submit"] {
+    margin-block: 0.6em 0.25em;
+    padding: 0.4em 0.8em;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+
+    &.exp {
+      max-width: var(--field-width);
+      margin-top: 1.5em;
+    }
+  }
+
+  .adb-actions {
+    display: flex;
+    justify-content: space-around;
+    max-width: var(--field-width);
+  }
+
+  .field-w-btn {
+    display: flex;
+    gap: var(--flex-gap);
+
+    button {
+      width: var(--btn-size);
+      height: var(--btn-size);
+      margin-top: auto;
+      border-radius: 50%;
+    }
+  }
+
+  section {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5em 0.25em;
+    padding-right: calc(100% - var(--field-width) + 0.25em);
+
+    --fs: 0.75em;
+
+    button {
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      font-size: var(--fs);
+    }
+  }
 </style>
