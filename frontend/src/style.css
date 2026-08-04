@@ -1,4 +1,4 @@
-@layer util;
+@layer important;
 
 *,
 *::before,
@@ -47,10 +47,27 @@
   --info-a20: light-dark(#83b5d4, #acd7f1);
 }
 
+html {
+  color-scheme: dark light;
+}
+
+body {
+  min-height: 100vh;
+  font-family: system-ui, "Segoe UI", Roboto, "Open Sans", "Helvetica Neue", sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  align-content: center;
+}
+
 img,
 svg {
   display: block;
   max-width: 100%;
+}
+
+*:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input,
@@ -64,16 +81,18 @@ button {
   outline: none;
 }
 
-body {
-  min-height: 100vh;
-  font-family: system-ui, "Segoe UI", Roboto, "Open Sans", "Helvetica Neue", sans-serif;
-  background: var(--background);
-  color: var(--foreground);
-  align-content: center;
-}
+input,
+select {
+  padding: 0.35em 0.5em;
+  background: var(--background-a10);
+  border: 1px solid var(--background-a20);
+  border-radius: var(--radius);
+  min-height: 1.5em;
 
-html {
-  color-scheme: dark light;
+  &:focus-visible {
+    outline: 1px solid var(--accent);
+    box-shadow: var(--shadow);
+  }
 }
 
 body:has(dialog[open]) {
@@ -93,12 +112,7 @@ dialog {
   }
 }
 
-*:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@layer util {
+@layer important {
   button {
     background: var(--background);
     color: var(--foreground);

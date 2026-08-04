@@ -169,20 +169,6 @@
       text-transform: capitalize;
     }
 
-    input,
-    select {
-      padding: 0.35em 0.5em;
-      background: var(--background-a10);
-      border: 1px solid var(--background-a20);
-      border-radius: var(--radius);
-      min-height: 1.5em;
-
-      &:focus-visible {
-        outline: 1px solid var(--accent);
-        box-shadow: var(--shadow);
-      }
-    }
-
     input {
       min-width: 26em;
       max-width: var(--field-width);
