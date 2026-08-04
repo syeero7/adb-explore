@@ -60,6 +60,10 @@ button {
   cursor: pointer;
 }
 
+button {
+  outline: none;
+}
+
 body {
   min-height: 100vh;
   font-family: system-ui, "Segoe UI", Roboto, "Open Sans", "Helvetica Neue", sans-serif;

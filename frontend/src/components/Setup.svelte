@@ -176,6 +176,11 @@
       border: 1px solid var(--background-a20);
       border-radius: var(--radius);
       min-height: 1.5em;
+
+      &:focus-visible {
+        outline: 1px solid var(--accent);
+        box-shadow: var(--shadow);
+      }
     }
 
     input {
