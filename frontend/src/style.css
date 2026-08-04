@@ -9,6 +9,9 @@
 :root {
   --radius: 6px;
   --shadow: 0 0 4px var(--accent);
+  --btn-size: 2em;
+  --btn-focus: var(--accent);
+  --svg-size: calc((1em / 8) + 1em);
 
   --foreground: light-dark(#121212, #fff);
 
@@ -69,6 +72,23 @@ html {
   color-scheme: dark light;
 }
 
+body:has(dialog[open]) {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+dialog {
+  border: 2px solid var(--background-a30);
+  background: var(--background);
+  border-radius: 8px;
+  outline: none;
+  overscroll-behavior: contain;
+
+  &::backdrop {
+    background: hsla(from var(--background) h s l / 0.8);
+  }
+}
+
 *:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -76,27 +96,25 @@ html {
 
 @layer util {
   button {
-    --btn-bg: var(--background);
-    --btn-fg: var(--foreground);
-    --btn-border: transparent;
-
-    background: var(--btn-bg);
-    color: var(--btn-fg);
-    border: 1px solid var(--btn-border);
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid transparent;
     transition-property: color, border-color;
     transition-duration: 300ms;
 
     svg {
-      fill: var(--btn-fg);
+      fill: var(--foreground);
       pointer-events: none;
       transition-property: fill;
       transition-duration: 300ms;
+      width: var(--svg-size);
+      height: var(--svg-size);
     }
 
     &:hover:not(:disabled),
     &:focus-visible:not(:disabled) {
-      --btn-border: var(--accent);
-      --btn-fg: var(--accent);
+      --foreground: var(--btn-focus);
+      border-color: var(--btn-focus);
     }
   }
 }

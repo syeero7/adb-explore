@@ -39,27 +39,77 @@
     <footer>
       <button title="clear" onclick={() => logs.clear()}>
         {@render svg({ d: DELETE })}
-        <span>Clear logs</span>
+        <span>Clear Logs</span>
       </button>
     </footer>
   </div>
 </dialog>
 
 <style>
+  dialog {
+    --shadow: 0 0 4px var(--danger);
+    --btn-focus: var(--danger);
+
+    & > div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      min-width: 28em;
+      min-height: 60vh;
+    }
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+
+    span {
+      font-weight: 600;
+      font-size: 1.25em;
+    }
+  }
+
   button {
-    height: 2em;
-    width: 2em;
+    width: var(--btn-size);
+    height: var(--btn-size);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  section {
+    flex: 1;
+    overflow: scroll;
+    margin-block: 0.5em;
+    max-height: calc(60vh - 6em);
+
+    p {
+      font-size: 0.95em;
+    }
+  }
+
+  footer {
+    button {
+      min-width: fit-content;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+    }
+
+    span {
+      font-size: 0.75em;
+    }
   }
 
   .err {
-    color: red;
+    color: var(--danger);
   }
 
   .warn {
-    color: orange;
+    color: var(--warning);
   }
 
   .info {
-    color: lightblue;
+    color: var(--info);
   }
 </style>

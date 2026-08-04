@@ -148,7 +148,6 @@
 
 <style>
   :root {
-    --btn-size: 2em;
     --flex-gap: 0.6em;
     --field-width: calc(100% - var(--btn-size) - var(--flex-gap));
   }
@@ -241,12 +240,10 @@
     padding: 0.5em 0.25em;
     padding-right: calc(100% - var(--field-width) + 0.25em);
 
-    --fs: 0.75em;
-
     button {
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      font-size: var(--fs);
+      font-size: 0.75em;
     }
   }
 </style>
