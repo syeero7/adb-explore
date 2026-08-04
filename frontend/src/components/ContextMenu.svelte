@@ -28,6 +28,7 @@
     onSubmit: async () => {},
   });
 
+  const isStorage = $derived(isStorageDir(directory.current));
   const isFile = $derived(currentItem.startsWith("1|"));
 
   const getContextMenuDimension: Attachment<HTMLMenuElement> = (node) => {
@@ -91,8 +92,6 @@
 
 {#if menu.isOpen}
   <menu {@attach getContextMenuDimension}>
-    {const isStorage = isStorageDir(directory.current)}
-
     {@render item("open", OPEN_DIR, () => toDir(currentItem), isFile && !isStorage)}
     {@render item("download", DOWNLOAD, download("default", [currentItem]), isStorage)}
     {@render item("download to", DOWNLOAD, download("select", [currentItem]), isStorage)}

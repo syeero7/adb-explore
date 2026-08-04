@@ -14,6 +14,7 @@
   import { svg, DOWN_ARROW, UP_ARROW, FILE, FOLDER } from "@/lib/svg";
 
   let selected: string[] = $state([]);
+  const isStorage = $derived(isStorageDir(directory.current));
 
   const isSymlink = (mode: number) => (mode & 0xf000) === 0xa000;
 </script>
@@ -47,7 +48,6 @@
 {/await}
 
 {#snippet row(entry: main.Entry)}
-  {const isStorage = isStorageDir(directory.current)}
   {const path = isSymlink(entry.mode) ? removePrefix(entry.id, "1|") : entry.id}
   <!-- NOTE: paths prefix with "1|" points to a symlink or regular file -->
 

@@ -5,6 +5,7 @@
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
 
   let isSearching = $state(false);
+  const isStorage = $derived(isStorageDir(directory.current));
   let timeout: number | undefined;
   // svelte-ignore <non_reactive_update>
   let input: HTMLInputElement | undefined;
@@ -40,17 +41,11 @@
     {@render svg({ d: RELOAD })}
   </button>
 
-  <button
-    title="go to parent directory"
-    onclick={toParentDir}
-    disabled={isStorageDir(directory.current)}>
+  <button title="go to parent directory" onclick={toParentDir} disabled={isStorage}>
     {@render svg({ d: UP_ARROW })}
   </button>
 
-  <button
-    title="go to storage directory"
-    onclick={toStorageDir}
-    disabled={isStorageDir(directory.current)}>
+  <button title="go to storage directory" onclick={toStorageDir} disabled={isStorage}>
     {@render svg({ d: STORAGE })}
   </button>
 
