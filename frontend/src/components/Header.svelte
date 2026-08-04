@@ -69,8 +69,28 @@
 </header>
 
 <style>
-  button {
-    height: 2.5em;
-    width: 2.5em;
+  header {
+    display: flex;
+    min-width: min(48em, 100vw);
+    min-height: 2.5em;
+    align-items: center;
+    gap: 0.5em;
+
+    input {
+      flex: 1;
+      min-width: 25ch;
+      cursor: text;
+      outline: none;
+      box-shadow: unset;
+      max-height: var(--btn-size);
+    }
+
+    button {
+      flex-shrink: 0;
+      height: var(--btn-size);
+      width: var(--btn-size);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
   }
 </style>
