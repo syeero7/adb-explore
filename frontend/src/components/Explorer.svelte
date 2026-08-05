@@ -54,7 +54,7 @@
   {const path = isSymlink(entry.mode) ? removePrefix(entry.id, "1|") : entry.id}
   <!-- NOTE: paths prefix with "1|" points to a symlink or regular file -->
 
-  <tr>
+  <tr data-active={undefined}>
     <td>
       <input type="checkbox" value={path} bind:group={selected} disabled={isStorage} />
     </td>
@@ -223,7 +223,9 @@
       transition-duration: 300ms;
 
       &:hover,
-      &:focus-visible {
+      &:focus-visible,
+      &[data-active] {
+        --foreground: var(--accent);
         color: var(--accent);
         background: var(--background-a10);
       }

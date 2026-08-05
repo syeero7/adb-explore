@@ -19,8 +19,8 @@
   let { selected }: { selected: string[] } = $props();
 
   let menu = $state({ height: 0, width: 0, isOpen: false });
-  let currentItem = $state("");
   let positions = $state({ cursor: { x: 0, y: 0 }, window: { height: 0, width: 0 } });
+  let currentRow = $state<HTMLTableRowElement | null>(null);
   let dialog = $state<Dialog>({
     isOpen: false,
     value: "",
@@ -29,8 +29,11 @@
     onSubmit: async () => {},
   });
 
+  const currentRowId = $derived(
+    currentRow?.querySelector<HTMLInputElement>("td > input")?.value || "",
+  );
   const isStorage = $derived(isStorageDir(directory.current));
-  const isFile = $derived(currentItem.startsWith("1|"));
+  const isFile = $derived(currentRowId.startsWith("1|"));
   const menuStyle = $derived.by(() => {
     const { x, y } = positions.cursor;
     return `--cursor-y:${y}; --cursor-x:${x};`;
@@ -41,20 +44,21 @@
     menu.width = node.offsetWidth;
   };
 
-  const onclick: MouseEventHandler<Window> = () => {
+  const closeMenu = () => {
     menu.isOpen = false;
+    currentRow?.removeAttribute("data-active");
+    currentRow = null;
   };
 
   const oncontextmenu: MouseEventHandler<Window> = async (e) => {
     e.preventDefault();
-    if (menu.isOpen) {
-      menu.isOpen = false;
-      return;
-    }
-
+    if (menu.isOpen) return closeMenu();
     if (!(e.target instanceof HTMLElement)) return;
+
     const row = e.target.closest<HTMLTableRowElement>("tbody > tr");
     if (row == null || e.target.closest("td > input") != null) return;
+    row.setAttribute("data-active", "");
+    currentRow = row;
 
     positions.cursor = { x: e.clientX, y: e.clientY };
     positions.window = { height: window.innerHeight, width: window.innerWidth };
@@ -62,14 +66,12 @@
     const { window: win, cursor } = positions;
     if (win.height - cursor.y < menu.height) positions.cursor.y -= menu.height;
     if (win.width - cursor.x < menu.width) positions.cursor.x -= menu.width;
-
-    currentItem = row.querySelector<HTMLInputElement>("td > input")?.value || "";
     menu.isOpen = true;
   };
 
   const renenameDialog = () => {
     dialog.title = `Rename ${isFile ? "File" : "Directory"}`;
-    const oldName = basename(currentItem);
+    const oldName = basename(currentRowId);
     dialog.oldValue = oldName;
     dialog.value = oldName;
     dialog.isOpen = true;
@@ -96,16 +98,16 @@
   };
 </script>
 
-<svelte:window {oncontextmenu} {onclick} />
+<svelte:window {oncontextmenu} onclick={closeMenu} />
 
 <InputDialog bind:dialog />
 
 {#if menu.isOpen}
   <menu transition:fade={{ duration: 100 }} {@attach getContextMenuDimension} style={menuStyle}>
-    {@render item("open", OPEN_DIR, () => toDir(currentItem), isFile && !isStorage)}
-    {@render item("download", DOWNLOAD, download("default", [currentItem]), isStorage)}
-    {@render item("download to", DOWNLOAD, download("select", [currentItem]), isStorage)}
-    {@render item("delete", DELETE, deleteEntry([currentItem]), isStorage)}
+    {@render item("open", OPEN_DIR, () => toDir(currentRowId), isFile && !isStorage)}
+    {@render item("download", DOWNLOAD, download("default", [currentRowId]), isStorage)}
+    {@render item("download to", DOWNLOAD, download("select", [currentRowId]), isStorage)}
+    {@render item("delete", DELETE, deleteEntry([currentRowId]), isStorage)}
     {@render item("rename", RENAME, renenameDialog, isStorage)}
     <hr />
     {@render item("upload files", UPLOAD, upload("files", directory.current), isStorage)}
