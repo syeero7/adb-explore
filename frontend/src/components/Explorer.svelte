@@ -63,7 +63,11 @@
     <td>
       {#if isFile}
         <div class="file">
-          {@render svg({ d: FILE, fileExt: entry.ext.length < 5 ? entry.ext : undefined })}
+          {const extLen = entry.ext.length}
+          {const hasExt = extLen > 0 && extLen < 5}
+          <span data-file-ext={hasExt ? entry.ext : undefined} style={`--ext-len:${extLen}`}>
+            {@render svg({ d: FILE })}
+          </span>
           <span>
             {entry.name}
           </span>
@@ -226,6 +230,33 @@
 
       .file {
         --row-cursor: default;
+        --ext-len: 0;
+
+        :global svg {
+          fill: var(--foreground);
+          width: var(--svg-size);
+          height: var(--svg-size);
+        }
+
+        span[data-file-ext] {
+          position: relative;
+
+          &::after {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            z-index: 2;
+            content: attr(data-file-ext);
+            color: var(--info);
+            background: var(--background);
+            min-width: clac(var(--ext-len) * 1ch);
+            transform: translate(0.25em, 20%);
+            border-radius: 2px;
+            font-size: 0.5em;
+            font-weight: 900;
+            padding: 0.1em;
+          }
+        }
       }
 
       button,

@@ -136,10 +136,4 @@ dialog {
       border-color: var(--btn-focus);
     }
   }
-
-  div > svg {
-    fill: var(--foreground);
-    width: var(--svg-size);
-    height: var(--svg-size);
-  }
 }
