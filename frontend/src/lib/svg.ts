@@ -1,11 +1,10 @@
 import { createRawSnippet } from "svelte";
 
-export const svg = createRawSnippet<[{ d: string; fileExt?: string }]>((props) => {
-  const { d, fileExt } = props();
-  const data = fileExt ? `data-file-ext=${fileExt}` : "";
+export const svg = createRawSnippet<[{ d: string }]>((props) => {
+  const { d } = props();
   return {
     render: () =>
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" ${data} ><path d="${d}" /></svg>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="${d}" /></svg>`,
   };
 });
 
