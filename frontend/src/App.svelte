@@ -1,6 +1,6 @@
 <script lang="ts">
   import Setup from "@/components/Setup.svelte";
-  import Explore from "@/components/Explore.svelte";
+  import Explorer from "@/components/Explorer.svelte";
   import { initLogs } from "@/lib/logs.svelte";
   import { router } from "@/lib/router.svelte";
 
@@ -9,7 +9,7 @@
 
 <main>
   {#if router.current === "explore"}
-    <Explore />
+    <Explorer />
   {:else}
     <Setup />
   {/if}
