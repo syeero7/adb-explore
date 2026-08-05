@@ -82,7 +82,7 @@ button {
   outline: none;
 }
 
-input,
+input:not(input[type="checkbox"]),
 select {
   padding: 0.35em 0.5em;
   background: var(--background-a10);
@@ -135,5 +135,11 @@ dialog {
       --foreground: var(--btn-focus);
       border-color: var(--btn-focus);
     }
+  }
+
+  div > svg {
+    fill: var(--foreground);
+    width: var(--svg-size);
+    height: var(--svg-size);
   }
 }

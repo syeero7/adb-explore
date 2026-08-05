@@ -70,11 +70,15 @@
 
 <style>
   header {
+    position: fixed;
+    top: 0;
     display: flex;
-    min-width: min(48em, 100vw);
-    min-height: 2.5em;
     align-items: center;
     gap: 0.5em;
+    background: var(--background);
+    min-width: var(--explorer-min-width);
+    min-height: var(--explorer-header-height);
+    margin-top: var(--explorer-header-margin);
 
     input {
       flex: 1;
