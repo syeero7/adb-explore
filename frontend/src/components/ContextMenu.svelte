@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fade } from "svelte/transition";
   import type { Attachment } from "svelte/attachments";
   import type { MouseEventHandler } from "svelte/elements";
   import InputDialog, { type Dialog } from "./InputDialog.svelte";
@@ -30,6 +31,10 @@
 
   const isStorage = $derived(isStorageDir(directory.current));
   const isFile = $derived(currentItem.startsWith("1|"));
+  const menuStyle = $derived.by(() => {
+    const { x, y } = positions.cursor;
+    return `--cursor-y:${y}; --cursor-x:${x};`;
+  });
 
   const getContextMenuDimension: Attachment<HTMLMenuElement> = (node) => {
     menu.height = node.offsetHeight;
@@ -40,12 +45,17 @@
     menu.isOpen = false;
   };
 
-  const oncontextmenu: MouseEventHandler<Window> = (e) => {
+  const oncontextmenu: MouseEventHandler<Window> = async (e) => {
     e.preventDefault();
+    if (menu.isOpen) {
+      menu.isOpen = false;
+      return;
+    }
 
     if (!(e.target instanceof HTMLElement)) return;
     const row = e.target.closest<HTMLTableRowElement>("tbody > tr");
     if (row == null || e.target.closest("td > input") != null) return;
+
     positions.cursor = { x: e.clientX, y: e.clientY };
     positions.window = { height: window.innerHeight, width: window.innerWidth };
 
@@ -91,7 +101,7 @@
 <InputDialog bind:dialog />
 
 {#if menu.isOpen}
-  <menu {@attach getContextMenuDimension}>
+  <menu transition:fade={{ duration: 100 }} {@attach getContextMenuDimension} style={menuStyle}>
     {@render item("open", OPEN_DIR, () => toDir(currentItem), isFile && !isStorage)}
     {@render item("download", DOWNLOAD, download("default", [currentItem]), isStorage)}
     {@render item("download to", DOWNLOAD, download("select", [currentItem]), isStorage)}
@@ -124,4 +134,43 @@
   </li>
 {/snippet}
 
-<style></style>
+<style>
+  :root {
+    --cursor-y: unset;
+    --cursor-x: unset;
+  }
+
+  menu {
+    position: absolute;
+    top: calc(var(--cursor-y) * 1px);
+    left: calc(var(--cursor-x) * 1px);
+    background: var(--background);
+    border: 1px solid var(--background-a30);
+    padding: 0.5em;
+    display: grid;
+    gap: 0.25em;
+    z-index: 5;
+    box-shadow: 0 0 4px hsla(from var(--foreground) h s l / 0.2);
+  }
+
+  li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    min-width: 100%;
+    padding: 0.3em;
+  }
+
+  hr {
+    min-width: 100%;
+    background: var(--background-a30);
+    border: none;
+    height: 1px;
+  }
+</style>
