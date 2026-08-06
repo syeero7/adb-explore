@@ -113,8 +113,6 @@
     --explorer-header-margin: 1.25em;
     --explorer-min-width: min(48em, 100vw);
     --btn-flex-gap: 0.5em;
-
-    --tr-name: 2;
   }
 
   :global body:has(div section.explorer) {
@@ -131,9 +129,11 @@
   }
 
   table {
+    --input-col-width: 2.5em;
+
     table-layout: fixed;
     border-spacing: 0;
-    min-width: 100%;
+    width: var(--explorer-min-width);
     min-height: 100%;
   }
 
@@ -143,30 +143,34 @@
   }
 
   thead {
-    --title-width: 0ch;
+    --max-chars: 0;
+
+    th:first-child {
+      border-color: transparent;
+      border-bottom-color: var(--background-a30);
+      width: var(--input-col-width);
+    }
 
     th:not(th:nth-child(1)) {
       --btn-padding: 1em;
-      min-width: calc(
-        var(--title-width) + var(--btn-flex-gap) + var(--svg-size) + var(--btn-padding)
+      --th-col-width: calc(
+        (var(--max-chars) * 1ch) + var(--btn-flex-gap) + var(--svg-size) + var(--btn-padding)
       );
+      min-width: var(--th-col-width);
     }
 
     th:nth-child(2) {
-      --title-width: 4ch;
+      --max-chars: 4;
     }
 
     th:nth-child(3) {
-      --title-width: 4ch;
+      --max-chars: 9;
+      width: var(--th-col-width);
     }
 
     th:nth-child(4) {
-      --title-width: 13ch;
-    }
-
-    th:first-of-type {
-      border-color: transparent;
-      border-bottom-color: var(--background-a30);
+      --max-chars: 13;
+      width: var(--th-col-width);
     }
 
     tr {
@@ -179,6 +183,7 @@
     button {
       text-transform: capitalize;
       justify-content: center;
+      min-width: 100%;
     }
   }
 
@@ -189,15 +194,13 @@
     gap: 0.5em;
     padding: 0.5em;
     min-height: 1.5em;
-    min-width: 100%;
+    max-width: 100%;
     background: transparent;
   }
 
   tbody {
-    --td-input-width: 2.5em;
-
     td:has(input) {
-      width: var(--td-input-width);
+      width: var(--input-col-width);
     }
 
     td:nth-child(3),
@@ -228,6 +231,17 @@
         --foreground: var(--accent);
         color: var(--accent);
         background: var(--background-a10);
+      }
+
+      button :global(svg),
+      .file span:first-child {
+        flex-shrink: 0;
+      }
+
+      button span,
+      .file span:nth-child(2) {
+        text-overflow: ellipsis;
+        overflow-x: hidden;
       }
 
       .file {
@@ -274,7 +288,7 @@
           inset: 0;
           z-index: 5;
           cursor: var(--row-cursor);
-          left: var(--td-input-width);
+          left: var(--input-col-width);
         }
       }
     }
