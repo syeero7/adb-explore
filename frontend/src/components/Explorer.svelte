@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { fade } from "svelte/transition";
   import type { main } from "@wails/go/models";
   import Header from "./Header.svelte";
   import ContextMenu from "./ContextMenu.svelte";
@@ -21,32 +22,41 @@
 
 <Header />
 <ContextMenu {selected} />
-<!-- TODO: style loging and failed states -->
 
-<section class="explorer">
+<section class="explorer" in:fade>
   {#await getEntries(directory)}
-    <p>Loading...</p>
+    <div data-status="loading" in:fade>
+      <p>Loading...</p>
+    </div>
   {:then data}
-    {#if Array.isArray(data)}
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            {@render th("name")}
-            {@render th("size")}
-            {@render th("date modified")}
-          </tr>
-        </thead>
+    <div in:fade>
+      {#if Array.isArray(data) && data.length > 0}
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              {@render th("name")}
+              {@render th("size")}
+              {@render th("date modified")}
+            </tr>
+          </thead>
 
-        <tbody>
-          {#each data as entry}
-            {@render row(entry)}
-          {/each}
-        </tbody>
-      </table>
-    {/if}
+          <tbody>
+            {#each data as entry}
+              {@render row(entry)}
+            {/each}
+          </tbody>
+        </table>
+      {:else}
+        <div data-status="empty" in:fade>
+          <p>The directory is empty.</p>
+        </div>
+      {/if}
+    </div>
   {:catch}
-    <p>Failed</p>
+    <div data-status="failed" in:fade>
+      <p>Oops, something went wrong. Check the logs.</p>
+    </div>
   {/await}
 </section>
 
@@ -109,10 +119,13 @@
 
 <style>
   :root {
+    --btn-flex-gap: 0.5em;
     --explorer-header-height: 2.5em;
     --explorer-header-margin: 1.25em;
     --explorer-min-width: min(48em, 100vw);
-    --btn-flex-gap: 0.5em;
+    --explorer-max-height: calc(
+      100vh - var(--explorer-header-height) - (var(--explorer-header-margin) * 2.5)
+    );
   }
 
   :global body:has(div section.explorer) {
@@ -121,7 +134,7 @@
 
   section {
     margin-top: calc(var(--explorer-header-height) + (var(--explorer-header-margin) * 1.5));
-    max-height: calc(100vh - var(--explorer-header-height) - (var(--explorer-header-margin) * 2.5));
+    max-height: var(--explorer-max-height);
     min-width: var(--explorer-min-width);
     overflow-y: scroll;
     background: var(--background);
@@ -242,37 +255,7 @@
       .file span:nth-child(2) {
         text-overflow: ellipsis;
         overflow-x: hidden;
-      }
-
-      .file {
-        --row-cursor: default;
-        --ext-len: 0;
-
-        :global svg {
-          fill: var(--foreground);
-          width: var(--svg-size);
-          height: var(--svg-size);
-        }
-
-        span[data-file-ext] {
-          position: relative;
-
-          &::after {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            z-index: 2;
-            content: attr(data-file-ext);
-            color: var(--info);
-            background: var(--background);
-            min-width: clac(var(--ext-len) * 1ch);
-            transform: translate(0.25em, 20%);
-            border-radius: 2px;
-            font-size: 0.5em;
-            font-weight: 900;
-            padding: 0.1em;
-          }
-        }
+        white-space: nowrap;
       }
 
       button,
@@ -292,5 +275,58 @@
         }
       }
     }
+  }
+
+  .file {
+    --row-cursor: default;
+    --ext-len: 0;
+
+    :global svg {
+      fill: var(--foreground);
+      width: var(--svg-size);
+      height: var(--svg-size);
+    }
+
+    span[data-file-ext] {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        z-index: 2;
+        content: attr(data-file-ext);
+        color: var(--info);
+        background: var(--background);
+        min-width: clac(var(--ext-len) * 1ch);
+        transform: translate(0.25em, 20%);
+        border-radius: 2px;
+        font-size: 0.5em;
+        font-weight: 900;
+        padding: 0.1em;
+      }
+    }
+  }
+
+  .explorer:has(div[data-status]) {
+    overflow: unset;
+    box-shadow: unset;
+  }
+
+  div[data-status] {
+    min-width: 100%;
+    min-height: var(--explorer-max-height);
+    background: var(--background);
+    align-content: center;
+    text-align: center;
+    font-style: oblique;
+  }
+
+  div[data-status="failed"] {
+    color: var(--danger);
+  }
+
+  div[data-status="loading"] {
+    color: var(--accent);
   }
 </style>
