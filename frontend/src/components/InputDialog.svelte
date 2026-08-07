@@ -30,6 +30,7 @@
     <form onsubmit={dialog.onSubmit}>
       <label>
         <span>Name</span>
+        <!-- svelte-ignore a11y_autofocus -->
         <input required type="text" bind:value={dialog.value} autofocus />
       </label>
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { tick } from "svelte";
   import Logs from "./Logs.svelte";
   import { directory, isStorageDir, refresh, toParentDir, toStorageDir } from "@/lib/fs.svelte";
   import { svg, RELOAD, UP_ARROW, STORAGE, SEARCH, CLOSE } from "@/lib/svg";
@@ -7,13 +6,9 @@
   let isSearching = $state(false);
   const isStorage = $derived(isStorageDir(directory.current));
   let timeout: number | undefined;
-  // svelte-ignore <non_reactive_update>
-  let input: HTMLInputElement | undefined;
 
   const openSearch = async () => {
     isSearching = true;
-    await tick();
-    input?.focus();
   };
 
   const refreshDir = () => {
@@ -50,7 +45,8 @@
   </button>
 
   {#if isSearching}
-    <input type="text" bind:this={input} oninput={search} aria-label="search query" />
+    <!-- svelte-ignore a11y_autofocus -->
+    <input type="text" autofocus oninput={search} aria-label="search query" />
     <button title="close" onclick={closeSearch}>
       {@render svg({ d: CLOSE })}
     </button>
