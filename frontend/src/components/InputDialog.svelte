@@ -30,14 +30,45 @@
     <form onsubmit={dialog.onSubmit}>
       <label>
         <span>Name</span>
-        <input required type="text" bind:value={dialog.value} />
+        <input required type="text" bind:value={dialog.value} autofocus />
       </label>
 
-      <button onclick={closeDialog} type="button">Cancel</button>
-      <button type="submit">Submit</button>
+      <div>
+        <button onclick={closeDialog} type="button">Cancel</button>
+        <button type="submit">Submit</button>
+      </div>
     </form>
   </div>
 </dialog>
 
 <style>
+  form {
+    display: grid;
+    gap: 1em;
+
+    & > div {
+      display: flex;
+      gap: 1em;
+      justify-content: end;
+    }
+
+    --shadow: 0 0 4px var(--danger);
+    --btn-focus: var(--danger);
+
+    button {
+      box-shadow: var(--shadow);
+      padding: 0.4em 0.8em;
+      border-radius: var(--radius);
+
+      &[type="submit"] {
+        --shadow: 0 0 4px var(--info);
+        --btn-focus: var(--info);
+      }
+    }
+  }
+
+  label {
+    display: grid;
+    gap: 0.5em;
+  }
 </style>
