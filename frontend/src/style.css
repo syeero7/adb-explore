@@ -111,6 +111,33 @@ dialog {
   &::backdrop {
     background: hsla(from var(--background) h s l / 0.8);
   }
+
+  & > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    min-width: 28em;
+  }
+
+  header {
+    --shadow: 0 0 4px var(--danger);
+    --btn-focus: var(--danger);
+
+    display: flex;
+    justify-content: space-between;
+
+    span {
+      font-weight: 600;
+      font-size: 1.25em;
+    }
+
+    button {
+      width: var(--btn-size);
+      height: var(--btn-size);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+  }
 }
 
 @layer important {

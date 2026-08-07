@@ -46,27 +46,8 @@
 </dialog>
 
 <style>
-  dialog {
-    --shadow: 0 0 4px var(--danger);
-    --btn-focus: var(--danger);
-
-    & > div {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5em;
-      min-width: 28em;
-      min-height: 60vh;
-    }
-  }
-
-  header {
-    display: flex;
-    justify-content: space-between;
-
-    span {
-      font-weight: 600;
-      font-size: 1.25em;
-    }
+  dialog > div {
+    min-height: 60vh;
   }
 
   button {
@@ -88,6 +69,9 @@
   }
 
   footer {
+    --shadow: 0 0 4px var(--danger);
+    --btn-focus: var(--danger);
+
     button {
       min-width: fit-content;
       margin-left: auto;
