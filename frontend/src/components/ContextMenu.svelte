@@ -22,10 +22,10 @@
   let positions = $state({ cursor: { x: 0, y: 0 }, window: { height: 0, width: 0 } });
   let currentRow = $state<HTMLTableRowElement | null>(null);
   let dialog = $state<Dialog>({
-    isOpen: false,
     value: "",
     title: "",
     oldValue: "",
+    node: undefined,
     onSubmit: async () => {},
   });
 
@@ -74,26 +74,26 @@
     const oldName = basename(currentRowId);
     dialog.oldValue = oldName;
     dialog.value = oldName;
-    dialog.isOpen = true;
+    dialog.node?.showModal();
     dialog.onSubmit = async (e: SubmitEvent) => {
       e.preventDefault();
       const newName = dialog.value.trim();
       if (!newName || newName == dialog.oldValue) return;
       await rename(directory.current, oldName, newName);
-      dialog.isOpen = false;
+      dialog.node?.close();
     };
   };
 
   const createDirDialog = () => {
     dialog.title = "Create Directory";
     dialog.value = "";
-    dialog.isOpen = true;
+    dialog.node?.showModal();
     dialog.onSubmit = async (e: SubmitEvent) => {
       e.preventDefault();
       const dirname = dialog.value.trim();
       if (!dirname) return;
       await makeDir(directory.current, dirname);
-      dialog.isOpen = false;
+      dialog.node?.close();
     };
   };
 </script>

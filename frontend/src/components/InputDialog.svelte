@@ -2,10 +2,10 @@
   import { svg, CLOSE } from "@/lib/svg";
 
   export type Dialog = {
-    isOpen: boolean;
     value: string;
     title: string;
     oldValue?: string;
+    node: HTMLDialogElement | undefined;
     onSubmit: (e: SubmitEvent) => Promise<void>;
   };
 
@@ -14,11 +14,11 @@
   let { dialog = $bindable() }: InputDialogProps = $props();
 
   const closeDialog = () => {
-    dialog.isOpen = false;
+    dialog.node?.close();
   };
 </script>
 
-<dialog open={dialog.isOpen}>
+<dialog bind:this={dialog.node}>
   <div>
     <header>
       <span>{dialog.title}</span>
