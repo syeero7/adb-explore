@@ -69,11 +69,13 @@
   };
 
   const selectADBExecutable = async () => {
-    paths.adb = await SelectADBExecutable();
+    const path = await SelectADBExecutable();
+    if (path) paths.adb = path;
   };
 
   const selectDownloadDir = async () => {
-    paths.downloadDir = await SelectDownloadDir();
+    const path = await SelectDownloadDir();
+    if (path) paths.downloadDir = path;
   };
 </script>
 
@@ -136,7 +138,7 @@
       <span>{label}</span>
       <input required type="text" bind:value={values[key]} />
     </label>
-    <!-- FIXME: use default path on dialog cancle -->
+
     <button
       {onclick}
       type="button"
